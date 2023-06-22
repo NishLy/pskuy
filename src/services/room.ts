@@ -87,11 +87,10 @@ export const findAllRoomWithRental = (
 };
 
 export const findAllRoom = (
-  input: ROOM_DATA & Partial<{ include_console: boolean }>,
+  input: Partial<ROOM_DATA>,
   include_console = false
 ): Promise<Room[]> => {
   return new Promise((resolve, reject) => {
-    delete input.include_console;
     if (include_console)
       Room.findAll({
         where: { ...input },
@@ -109,13 +108,13 @@ export const findAllRoom = (
 };
 
 export const findOneRoom = (
-  input: ROOM_DATA,
+  input: Partial<ROOM_DATA>,
   include_console = false
 ): Promise<Room | null> => {
   return new Promise((resolve, reject) => {
     if (include_console)
       Room.findOne({
-        where: { ...input },
+        where: input,
         include: Console,
       })
         .then((res) => resolve(res))
@@ -129,9 +128,19 @@ export const findOneRoom = (
   });
 };
 
-export const deleteRoomRecord = (id: number): Promise<number> => {
+export const deleteRoomOneRecord = (id: number): Promise<number> => {
   return new Promise((resolve, reject) => {
     Room.destroy({ where: { id } })
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
+  });
+};
+
+export const deleteRoomRecord = (
+  input: Partial<ROOM_DATA>
+): Promise<number> => {
+  return new Promise((resolve, reject) => {
+    Room.destroy({ where: input })
       .then((res) => resolve(res))
       .catch((err) => reject(err));
   });

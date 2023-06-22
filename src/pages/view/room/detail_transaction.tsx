@@ -5,10 +5,12 @@ import {
   Divider,
   Typography,
   FormControl,
-  FormHelperText,
   InputAdornment,
   OutlinedInput,
 } from "@mui/material";
+import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 import React from "react";
 
 type Props = {
@@ -19,9 +21,26 @@ type Props = {
   };
   onclick_continue: () => void;
   onCancel: () => void;
+  onTimeChange: ({
+    checkIn,
+    checkOut,
+  }: {
+    checkIn: string;
+    checkOut: string;
+  }) => void;
 };
 
 export default function DetailTransaction(props: Props) {
+  const [value, setValue] = React.useState<Dayjs | null>(dayjs());
+  React.useEffect(() => {
+    props.onTimeChange({
+      checkIn: value?.toISOString() ?? new Date().toISOString(),
+      checkOut:
+        value?.add(props.price.hour, "hours").toISOString() ??
+        new Date().toISOString(),
+    });
+  }, [value]);
+
   return (
     <Paper
       sx={{
@@ -29,13 +48,12 @@ export default function DetailTransaction(props: Props) {
         zIndex: 50,
         position: "fixed",
         bottom: 0,
+        height: "fit-content",
         left: 0,
         paddingTop: 1,
-        borderTop: "0.8px black solid",
       }}
     >
       <Stack spacing={2} padding={2}>
-        <Divider />
         <Button
           variant="contained"
           color="error"
@@ -58,6 +76,20 @@ export default function DetailTransaction(props: Props) {
             fullWidth
           />
         </FormControl>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <TimePicker
+            label="Jam Checkin"
+            value={value}
+            disablePast
+            onChange={(newValue) => setValue(newValue)}
+          />
+          <TimePicker
+            label="Jam Checkout"
+            readOnly
+            disablePast
+            value={value?.add(props.price.hour, "hours")}
+          />
+        </LocalizationProvider>
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="body1" color="text.secondary">
             Jam sewa

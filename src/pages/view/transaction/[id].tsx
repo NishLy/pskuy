@@ -30,10 +30,8 @@ export default function Page() {
     id_room: -1,
   });
 
-  const { data, error } = trpc.findOneTransaction.useQuery(dataTransaction);
+  const { data } = trpc.findOneTransaction.useQuery(dataTransaction);
   const fetchResult = data?.transaction as Transaction;
-
-  console.log(data, error);
 
   React.useEffect(() => {
     const query = router.query;
@@ -69,36 +67,6 @@ export default function Page() {
     },
   ];
 
-  function getStatusText(status: TypeTransactionsStatus) {
-    switch (status) {
-      case "proccess":
-        return "Diproses";
-      case "ongoing":
-        return "Berjalan";
-      case "finished":
-        return "Selesai";
-      case "completed":
-        return "Ditaguhkan";
-      case "cancel":
-        return "Dibatalkan";
-    }
-  }
-
-  function getAvatarStatus(status: TypeTransactionsStatus) {
-    switch (status) {
-      case "proccess":
-        return "Diproses";
-      case "ongoing":
-        return <PendingIcon sx={{ width: 40, height: 40 }} />;
-      case "finished":
-        return <CheckCircleIcon sx={{ width: 40, height: 40 }} />;
-      case "completed":
-        return <ErrorIcon sx={{ width: 40, height: 40 }} />;
-      case "cancel":
-        return <CancelIcon sx={{ width: 40, height: 40 }} />;
-    }
-  }
-
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -120,7 +88,7 @@ export default function Page() {
         >
           {fetchResult && getAvatarStatus(fetchResult.status)}
         </Avatar>
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h5" color="white">
           Transaksi {fetchResult && getStatusText(fetchResult.status)}
         </Typography>
         <Stack spacing={2} width="100%" marginTop={5}>
@@ -221,4 +189,34 @@ export default function Page() {
       </Box>
     </Container>
   );
+}
+
+function getStatusText(status: TypeTransactionsStatus) {
+  switch (status) {
+    case "proccess":
+      return "Diproses";
+    case "ongoing":
+      return "Berjalan";
+    case "finished":
+      return "Selesai";
+    case "completed":
+      return "Ditaguhkan";
+    case "cancel":
+      return "Dibatalkan";
+  }
+}
+
+function getAvatarStatus(status: TypeTransactionsStatus) {
+  switch (status) {
+    case "proccess":
+      return "Diproses";
+    case "ongoing":
+      return <PendingIcon sx={{ width: 40, height: 40 }} />;
+    case "finished":
+      return <CheckCircleIcon sx={{ width: 40, height: 40 }} />;
+    case "completed":
+      return <ErrorIcon sx={{ width: 40, height: 40 }} />;
+    case "cancel":
+      return <CancelIcon sx={{ width: 40, height: 40 }} />;
+  }
 }

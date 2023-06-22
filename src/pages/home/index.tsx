@@ -1,27 +1,31 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import * as React from "react";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
-import ShowOffers from "./special_offers";
-import RoomGrid from "./room_grid";
-import useUserCookies from "@/hooks/useCookies";
+import ShowOffers from "./__components/special_offers";
+import RoomGrid from "../__components/room_grid";
 import RedirectSignin from "../__components/redirect_signin";
+import AppContext from "@/context/app";
 
 export default function index() {
   const [category, setCategory] = React.useState("semua");
-  if (!useUserCookies().token || !useUserCookies().uuid)
-    return <RedirectSignin />;
+  const [userContext] = React.useContext(AppContext);
+  if (!userContext?.token || !userContext?.uuid) return <RedirectSignin />;
+
   return (
     <Stack spacing={2}>
       <Box padding={1}>
-        <Typography variant="overline" mt="0" gutterBottom>
+        <Typography variant="overline" mt="0" gutterBottom color="white">
           Get Ready,
         </Typography>
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom color="white">
           Cari Tempat main mu!
         </Typography>
       </Box>
       <ShowOffers />
-      <Box paddingBottom={2} sx={{ overflowX: "auto" }}>
+      <Box
+        paddingBottom={2}
+        sx={{ overflowX: "auto", WebkitScrollbar: "none" }}
+      >
         <Stack
           paddingX={1}
           direction="row"

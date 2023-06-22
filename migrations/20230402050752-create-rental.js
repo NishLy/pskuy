@@ -36,6 +36,14 @@ module.exports = {
           key: "id",
         },
       },
+      total_rating: {
+        defaultValue: 0,
+        type: Sequelize.DataTypes.FLOAT(2),
+      },
+      total_transaction: {
+        defaultValue: 0,
+        type: Sequelize.DataTypes.INTEGER,
+      },
       latitude: {
         type: Sequelize.DataTypes.FLOAT,
       },

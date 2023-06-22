@@ -51,8 +51,6 @@ export default function SignUp() {
     }
   );
 
-  console.log(errors);
-
   function checkPassword(event: React.ChangeEvent<HTMLInputElement>) {
     if (
       event.currentTarget.value ===

@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { generateRStringDate } from "./generateRandString";
 
 export function saveFile(
   { basePath, fileName }: { basePath: string; fileName: string },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   file: any
 ): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -17,6 +17,25 @@ export function saveFile(
           resolve(newPath.replace("./public", ""));
         });
       });
+    });
+  });
+}
+
+export function deleteFile(path: string) {
+  return new Promise((resolve, reject) => {
+    fs.unlink(path, (err) => {
+      console.log(err);
+      if (err) return reject(err);
+      return resolve(true);
+    });
+  });
+}
+
+export function readDir(path: string): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    fs.readdir(path, (err, files) => {
+      if (err) return reject(err);
+      return resolve(files);
     });
   });
 }

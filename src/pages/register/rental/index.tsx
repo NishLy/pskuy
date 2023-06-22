@@ -8,14 +8,12 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import client from "@/utils/trpc";
 import { useRouter } from "next/router";
-import { Avatar } from "@mui/material";
+import { Avatar, Link } from "@mui/material";
 import getBase64 from "@/lib/getBase64";
 import RENTAL_DATA from "@/interfaces/rental";
 import cookies from "@/lib/cookies";
 import ImageCoursel from "@/pages/__components/image_coursel";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-// TODO remove, this demo shouldn't need to reset the theme.
+import MapSelect from "@/pages/__components/map_selector";
 
 export default function SignUp() {
   const [registerData, setRegisterData] = React.useState<RENTAL_DATA>({
@@ -26,16 +24,21 @@ export default function SignUp() {
     longitude: 0,
     name: "",
   });
+
+  //state
   const [images, setImages] = React.useState<string[]>([]);
   const [logoImages, setLogoImages] = React.useState<string | undefined>();
   const [register, setRegister] = React.useState(false);
+  const [openMap, setOpenMap] = React.useState(false);
+  const [position, setPosition] = React.useState({ Iat: 0, Ing: 0 });
 
+  //input ref
   const imagesElement = React.useRef<HTMLInputElement>(null);
   const imageLogoElement = React.useRef<HTMLInputElement>(null);
-
   const router = useRouter();
 
-  client.registeRental.useQuery(registerData, {
+  //api to send data Rental
+  client.registerRental.useQuery(registerData, {
     enabled: register,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -46,18 +49,19 @@ export default function SignUp() {
     },
     onError() {
       setRegister(false);
-      // closeBackdrop();
     },
   });
 
+  //input element on click handler
   const handleImagesClick = async () => {
-    console.log(imagesElement.current);
     imagesElement.current?.click();
   };
+
   const handleLogoClick = async () => {
     imageLogoElement.current?.click();
   };
 
+  //function to send images data after the main data Rental is sended
   const handleFileUpload = (id: number) => {
     const files = imagesElement?.current?.files;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -77,7 +81,7 @@ export default function SignUp() {
       })
         .then((res) => {
           console.log(res);
-          res.ok ? router.push("/manages/rental") : null;
+          res.ok ? router.push("/manage/rental") : null;
         })
         .catch((err) => {
           if (err) throw new Error(err);
@@ -85,6 +89,7 @@ export default function SignUp() {
     }
   };
 
+  //when form is submitted
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -93,8 +98,8 @@ export default function SignUp() {
       address: data.get("address")?.toString() ?? "",
       description: data.get("description")?.toString() ?? "",
       id_owner: cookies.get("uuid") ?? "",
-      latitude: parseInt(data.get("latitude")?.toString() ?? "0"),
-      longitude: parseInt(data.get("longitude")?.toString() ?? "0"),
+      latitude: position.Iat,
+      longitude: position.Ing,
       name: data.get("name")?.toString() ?? "",
     });
     setRegister(true);
@@ -105,6 +110,7 @@ export default function SignUp() {
     const fileImages = imagesElement?.current.files;
     if (!fileImages) return;
     const arr: string[] = [];
+
     Array.from(fileImages).map(async (e: File) => {
       getBase64(e).then((res) => {
         arr.push(res as string);
@@ -121,8 +127,19 @@ export default function SignUp() {
     setLogoImages((await getBase64(fileImages)) as string);
   }
 
+  function handlePostionChange(IatIng: google.maps.LatLng) {
+    setPosition({ Iat: IatIng.lat(), Ing: IatIng.lng() });
+    setOpenMap(false);
+  }
+
   return (
     <>
+      {openMap && (
+        <MapSelect
+          moveable={true}
+          controlled={{ markerOnChange: handlePostionChange }}
+        />
+      )}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -208,14 +225,21 @@ export default function SignUp() {
                   autoComplete="address"
                 />
               </Grid>
+              <Grid item xs={12}>
+                <Link onClick={() => setOpenMap(true)}>
+                  Pilih posisi usaha anda
+                </Link>
+              </Grid>
               <Grid item xs={6}>
                 <TextField
                   autoComplete="latitude"
                   name="latitude"
                   required
                   fullWidth
+                  disabled
                   id="latitude"
                   label="Latitude"
+                  value={position.Iat}
                   autoFocus
                 />
               </Grid>
@@ -225,6 +249,8 @@ export default function SignUp() {
                   name="longitude"
                   required
                   fullWidth
+                  disabled
+                  value={position.Ing}
                   id="longitude"
                   label="Longitude"
                   autoFocus
@@ -242,16 +268,6 @@ export default function SignUp() {
           </Box>
         </Box>
       </Container>
-      {/* <Stack spacing={2} sx={{ width: "100%" }}>
-        <Snackbar
-          open={!!error?.data?.SQLErrors.uniqueError?.cause?.id_user}
-          autoHideDuration={6000}
-        >
-          <Alert severity="error" sx={{ width: "100%" }}>
-            Satu akun hanya bisa memiliki 1 akun owner
-          </Alert>
-        </Snackbar>
-      </Stack> */}
     </>
   );
 }

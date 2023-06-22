@@ -11,15 +11,12 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import cookieCutter from "@/lib/cookies";
-import client from "@/utils/trpc";
+import cookies from "@/lib/cookies";
+import trpc from "@/utils/trpc";
 import { useRouter } from "next/router";
 import AppContext from "@/context/app";
 import Loading from "./__components/loading";
-import cookies from "@/lib/cookies";
 import Copyright from "./__components/copyright";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 export interface LOGIN_DATA {
   username: string;
@@ -35,15 +32,19 @@ export default function SignIn() {
     remember: false,
     owner: false,
   });
+
   const [fetch, setFetch] = React.useState(false);
   const [errors, setErorrs] = React.useState<{
     [key: string]: any;
   }>({});
 
-  const router = useRouter();
-  const [, setUserContext] = React.useContext(AppContext);
+  const [userContext, setUserContext] = React.useContext(AppContext);
 
-  const result = client.login.useQuery(loginData, {
+  const router = useRouter();
+  /* `trpc.login.useQuery` is a hook provided by the `trpc` library that allows us to make a query to
+ the server to log in a user. It takes in the `loginData` object as a parameter, which contains the
+ username, password, and remember/owner boolean values. */
+  trpc.login.useQuery(loginData, {
     enabled: fetch,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -51,22 +52,22 @@ export default function SignIn() {
     staleTime: Infinity,
 
     onSuccess(data) {
-      cookieCutter.set("username", data.username, {
+      cookies.set("username", data.username, {
         expires: new Date().toISOString(),
       });
-      cookieCutter.set("uuid", data.uuid, {
+      cookies.set("uuid", data.uuid, {
         expires: new Date().toISOString(),
       });
-      cookieCutter.set("user_type", data.user_type, {
+      cookies.set("user_type", data.user_type, {
         expires: new Date().toISOString(),
       });
-      cookieCutter.set("email", data.email, {
+      cookies.set("email", data.email, {
         expires: new Date().toISOString(),
       });
-      cookieCutter.set("profile_photo", data.profile_photo, {
+      cookies.set("profile_photo", data.profile_photo, {
         expires: new Date().toISOString(),
       });
-      cookieCutter.set("token", data.token, {
+      cookies.set("token", data.token, {
         expires: new Date().toISOString(),
       });
       setUserContext && setUserContext(data);
@@ -81,12 +82,23 @@ export default function SignIn() {
     },
   });
 
+  /* This `React.useEffect` hook is checking if the user is already logged in by checking if the
+  `userContext` has a `token` and `uuid` value. If both values are present, it redirects the user to
+  the home page using `router.replace("/home")`. The dependency array `[0]` ensures that this effect
+  runs only once when the component mounts. */
   React.useEffect(() => {
-    if (!cookies.get("uuid") || !cookies.get("token")) null;
-    else if (cookies.get("uuid") !== "" && cookies.get("token") !== "")
+    if (!userContext?.token || !userContext?.uuid) null;
+    else if (userContext?.token !== "" && userContext?.uuid !== "")
       router.replace("/home");
   }, [0]);
 
+  /**
+   * This function handles form submission by getting form data, updating login data, and setting a fetch
+   * flag.
+   * @param event - The event parameter is of type React.FormEvent<HTMLFormElement>, which is a synthetic
+   * event that is triggered when a form is submitted. It contains information about the form submission,
+   * such as the target form element and the data submitted in the form.
+   */
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -99,12 +111,29 @@ export default function SignIn() {
     setloginData(request);
   };
 
+  /**
+   * These are two event handlers in a TypeScript React component that update the state of a login form
+   * based on checkbox inputs.
+   * @param event - React.ChangeEvent<HTMLInputElement> is a type definition for an event object that is
+   * triggered when the value of an HTML input element changes. It is a generic type that takes an
+   * HTMLInputElement as a type parameter. The event object contains information about the input element
+   * that triggered the event, such as its current value
+   */
   const handleRememberSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     setloginData({
       ...loginData,
       remember: event.currentTarget.checked,
     });
   };
+
+  /**
+   * This function updates the `owner` property in the `loginData` object based on the checked state of
+   * an input element.
+   * @param event - React.ChangeEvent<HTMLInputElement> - This is a type definition for the event
+   * object that is passed as an argument to the handleOwnerSelect function. It is a specific type of
+   * event object that is triggered when the value of an input element of type "checkbox" is changed.
+   * It contains information about the event
+   */
   const handleOwnerSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     setloginData({
       ...loginData,
@@ -141,6 +170,8 @@ export default function SignIn() {
               name="username"
               autoComplete="username"
               autoFocus
+              /* This code is setting the error state and helper text of the username input field based
+             on whether the `errors` object contains a `notFound` property. */
               error={!!errors.notFound}
               helperText={"notFound" in errors && errors.notFound?.username}
             />
@@ -153,6 +184,8 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
+              /* This code is setting the error state of the password input field based on whether the
+            `errors` object contains an `unauthorized` property. */
               error={!!errors.unauthorized}
               helperText={
                 "unauthorized" in errors && errors.unauthorized?.password

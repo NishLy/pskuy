@@ -1,11 +1,5 @@
-import {
-  Paper,
-  Box,
-  IconButton,
-  Typography,
-  Button,
-  Stack,
-} from "@mui/material";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Paper, IconButton, Typography, Button, Stack } from "@mui/material";
 import React from "react";
 import AddCircleOutlinedIcon from "@mui/icons-material/AddCircleOutlined";
 import RemoveCircleOutlineOutlinedIcon from "@mui/icons-material/RemoveCircleOutlineOutlined";
@@ -25,7 +19,7 @@ export default function PurchaseControl(props: Props) {
     <Paper
       sx={{
         width: "100%",
-        zIndex: 50,
+        zIndex: 1500,
         position: "fixed",
         bottom: 0,
         left: 0,

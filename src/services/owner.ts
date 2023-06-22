@@ -32,7 +32,7 @@ export const registerOwner = ({
   });
 };
 
-export const findOwnerRecord = (id: string): Promise<Owner | null> => {
+export const findOneOwnerRecord = (id: string): Promise<Owner | null> => {
   return new Promise((resolve, reject) => {
     Owner.findOne({ where: { id } })
       .then((owner) => resolve(owner))

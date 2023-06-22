@@ -7,6 +7,7 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import Paper from "@mui/material/Paper";
 import { useRouter } from "next/router";
 import AppContext from "@/context/app";
+import ExploreIcon from "@mui/icons-material/Explore";
 
 // interface Props extends ScriptProps {
 //   menuSelected: number;
@@ -25,7 +26,13 @@ export default function FixedBottomNavigation() {
         router.push("/home");
         break;
       case 1:
-        router.push("/manages/rental");
+        router.push("/explore");
+        break;
+      case 2:
+        router.push("/transaction");
+        break;
+      case 3:
+        router.push("/manage/rental");
         break;
     }
   }, [menuSelected]);
@@ -35,8 +42,14 @@ export default function FixedBottomNavigation() {
       case "/home":
         setMenuSelected(0);
         break;
-      case "/manages/rental":
+      case "/explore":
         setMenuSelected(1);
+        break;
+      case "/transaction":
+        setMenuSelected(2);
+        break;
+      case "/manage/rental":
+        setMenuSelected(3);
         break;
     }
   }, [0, router.pathname]);
@@ -53,17 +66,21 @@ export default function FixedBottomNavigation() {
         }}
       >
         <BottomNavigationAction label="Home" icon={<HomeIcon />} />
+        <BottomNavigationAction label="Explore" icon={<ExploreIcon />} />
+        <BottomNavigationAction
+          // BUAT PAGES TRANSACTION DETAIL TRANSAKSI DI PAGES DGN NAMA TRANSAKSI
+          // ROUTE HALAMAN BISA DILIHAT DI VIEW - ACCOUNT
+
+          label={
+            userContext?.user_type === "owner"
+              ? "Kelola Order"
+              : "Daftar Transaksi"
+          }
+          icon={<LocalMallIcon />}
+        />
+
         {userContext?.user_type === "owner" && (
-          <BottomNavigationAction
-            label="Kelola Rental"
-            icon={<StorefrontIcon />}
-          />
-        )}
-        {userContext?.user_type === "owner" && (
-          <BottomNavigationAction
-            label="Kelola Order"
-            icon={<LocalMallIcon />}
-          />
+          <BottomNavigationAction label="Kelola" icon={<StorefrontIcon />} />
         )}
       </BottomNavigation>
     </Paper>

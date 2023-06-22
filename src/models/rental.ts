@@ -12,6 +12,8 @@ export default class Rental extends Model {
   declare id_owner: string;
   declare latitude: number;
   declare longitude: number;
+  declare total_rating: number;
+  declare total_transaction: number;
   /**
    * Helper method for defining associations.
    * This method is not a part of Sequelize lifecycle.
@@ -53,6 +55,14 @@ Rental.init(
         model: Owner, // 'Actors' would also work
         key: "id",
       },
+    },
+    total_rating: {
+      defaultValue: 0,
+      type: DataTypes.FLOAT(2),
+    },
+    total_transaction: {
+      defaultValue: 0,
+      type: DataTypes.INTEGER,
     },
     latitude: {
       type: DataTypes.FLOAT,

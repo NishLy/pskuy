@@ -1,22 +1,12 @@
-/**
- * This is your entry point to setup the root configuration for tRPC on the server.
- * - `initTRPC` should only be used once per app.
- * - We export only the functionality that we use so we can enforce which base procedures should be used
- *
- * Learn how to create protected base procedures and other things below:
- * @see https://trpc.io/docs/v10/router
- * @see https://trpc.io/docs/v10/procedures
- */
 import UnauthorizedError from "@/error/unauthorized";
 import { SQLUniqueError } from "@/error/uniqueError";
-// import isAuthenticated from "@/middlewares/auth";
 import createContext from "@/pages/api/trpc/__context";
-import { verifyJWT } from "@/utils/jwt";
 import verifyToken from "@/utils/verifyToken";
 import { TRPCError, inferAsyncReturnType, initTRPC } from "@trpc/server";
-import { UniqueConstraintError } from "sequelize";
 import { ZodError } from "zod";
 
+/* This code exports a `t` object that is created using the `initTRPC` function from the `@trpc/server`
+library. The `t` object has three properties: `publicProcedure`, `router`, and `middleware`. */
 export const t = initTRPC
   .context<inferAsyncReturnType<typeof createContext>>()
   .create({
@@ -54,7 +44,6 @@ export const middleware = t.middleware;
 
 const isAuthenticated = middleware(async (opts) => {
   const { ctx } = opts;
-  console.log(await verifyToken(ctx.token), ctx);
   if (!ctx)
     throw new TRPCError({
       code: "UNAUTHORIZED",

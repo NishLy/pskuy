@@ -1,4 +1,6 @@
-import { Box, Button, SxProps } from "@mui/material";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Box, Button } from "@mui/material";
+import Image from "next/image";
 import { ScriptProps } from "next/script";
 import React from "react";
 
@@ -13,8 +15,8 @@ export default function ImageCoursel(props: Props) {
   const boxElement = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
-    boxElement.current?.scrollTo({ left: 0, behavior: "smooth" });
-  }, []);
+    boxElement.current?.scrollBy({ left: -140, behavior: "smooth" });
+  }, [props.images]);
 
   return (
     <>
@@ -59,7 +61,7 @@ export default function ImageCoursel(props: Props) {
               scrollSnapAlign: "center",
             }}
           >
-            <img
+            <Image
               style={{
                 width: "100%",
                 height: "100%",
@@ -68,8 +70,20 @@ export default function ImageCoursel(props: Props) {
               }}
               loading="lazy"
               src={src}
+              width={800}
+              height={800}
               alt=""
             />
+            {props.controlled && (
+              <Button
+                sx={{ position: "absolute", bottom: 10, right: 10 }}
+                variant="contained"
+                color="error"
+                onClick={() => props.controlled?.setState(src)}
+              >
+                Hapus
+              </Button>
+            )}
           </Box>
         ))}
         {props.controlled ? (

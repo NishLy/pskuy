@@ -1,6 +1,4 @@
-import { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { IncomingMessage } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
 
 type req = IncomingMessage & {
   cookies: Partial<{

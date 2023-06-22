@@ -1,9 +1,7 @@
 import formidable from "formidable";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { RENTAL_IMAGES_PATH, RENTAL_LOGO_PATH } from "@/static/path";
-import generateRandomString, {
-  generateRStringDate,
-} from "@/lib/generateRandString";
+import generateRandomString from "@/lib/generateRandString";
 import { saveFile } from "@/lib/files";
 import Rental from "@/models/rental";
 
@@ -36,9 +34,9 @@ export async function POST(request: NextApiRequest, res: NextApiResponse) {
               ? res.status(200).end()
               : res.status(500).end({ result });
           })
-          .catch((err) => res.status(500).end());
+          .catch((err) => res.status(500).end(err));
       })
-      .catch((err) => res.status(500).end());
+      .catch((err) => res.status(500).end(err));
   });
 }
 
@@ -63,10 +61,10 @@ export const saveMultipleFile = async (
         arr[file as keyof typeof arr]
       )
         .then((res) => {
-          index++;
           file === "logo_image" ? (pathLogo = res) : arrPath.push(res);
           if (index + 1 >= objectLength)
             return resolve({ images: arrPath, logo: pathLogo });
+          index++;
         })
         .catch((err) => reject(err));
     }

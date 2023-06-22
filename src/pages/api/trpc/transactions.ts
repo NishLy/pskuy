@@ -17,6 +17,8 @@ const transactionProcedures = {
         id_rental: z.number(),
         id_room: z.number(),
         rent_time: z.number(),
+        time_checkIn: z.string(),
+        time_checkOut: z.string(),
       })
     )
     .query(async ({ input }) => {
@@ -31,8 +33,8 @@ const transactionProcedures = {
       const data = {
         ...input,
         status: TypeTransactionsStatus.ongoing,
-        time_checkIn: new Date(),
-        time_checkOut: new Date(),
+        time_checkIn: new Date(input.time_checkIn),
+        time_checkOut: new Date(input.time_checkOut),
         total_prices: room?.price_per_hour * input.rent_time,
       };
 

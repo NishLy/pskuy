@@ -2,8 +2,6 @@ import * as React from "react";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
@@ -19,31 +17,16 @@ import Alert from "@mui/material/Alert";
 import { Snackbar, Stack } from "@mui/material";
 import handleFieldError from "@/utils/handle_field_errors";
 import cookies from "@/lib/cookies";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Copyright(props: any) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import Copyright from "@/pages/__components/copyright";
+import Loading from "@/pages/__components/loading";
+import AppContext from "@/context/app";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
-export default function SignUp() {
+export default function RegisterOwner() {
+  const [userContext] = React.useContext(AppContext);
   const [ownerData, setUserData] = React.useState<OWNER>({
-    id_user: "fed6ea9f-8629-4c6b-b562-3c63f09849b6",
+    id_user: userContext?.uuid ?? "",
     name: "",
     email: "",
     password: "",
@@ -52,36 +35,24 @@ export default function SignUp() {
     number: "",
     birth_date: "",
   });
-  // const [error, setErrors] = React.useState({});
-  const [SignUp, setSignUp] = React.useState(false);
+  const [signup, setSignup] = React.useState(false);
   const [date, setDate] = React.useState<Dayjs | null>(
     dayjs("2022-04-17T15:30")
   );
   const [isPasswordMatch, setPasswordMatch] = React.useState(true);
-  const router = useRouter();
-  // const passwordInputElement = useRef<HTMLInputElement>(null);
 
-  // console.log(ctx.);
-  const result = client.registerOwner.useQuery(ownerData, {
-    enabled: SignUp,
-    refetchOnWindowFocus: false,
-    // refetchOnMount: false,
-    refetchOnReconnect: false,
-    // retry: false,
-    staleTime: Infinity,
+  const router = useRouter();
+
+  const { error } = client.registerOwner.useQuery(ownerData, {
+    enabled: signup,
     onSuccess() {
-      // closeBackdrop();
+      cookies.destroy();
       router.push("/signin");
     },
     onError() {
-      // closeBackdrop();
+      setSignup(false);
     },
   });
-
-  result.data;
-
-  const { error } = result;
-  console.log(result);
 
   function checkPassword(event: React.ChangeEvent<HTMLInputElement>) {
     if (
@@ -106,11 +77,12 @@ export default function SignUp() {
       username: data.get("username")?.toString() ?? "",
       password: data.get("password")?.toString() ?? "",
     });
-    setSignUp(true);
+    setSignup(true);
   };
 
   return (
     <>
+      {signup && <Loading />}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -122,7 +94,7 @@ export default function SignUp() {
           }}
         >
           <Typography component="h1" variant="h5">
-            Sign up
+            Daftar Akun Usaha
           </Typography>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
@@ -179,7 +151,7 @@ export default function SignUp() {
                   required
                   fullWidth
                   id="number"
-                  label="Active Number"
+                  label="Nomor Aktif"
                   autoFocus
                   helperText={handleFieldError([
                     error?.data?.SQLErrors?.uniqueError?.cause.number,
@@ -253,20 +225,21 @@ export default function SignUp() {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 3, mb: 2, paddingY: 2 }}
             >
-              Sign Up
+              Daftar akun usaha
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="/SignIn" variant="body2">
-                  Already have an account? Sign in
+                  Dengan mendaftarkan akun usaha anda sudah menyetujui syarat
+                  dan perturan kami
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
+        <Copyright />
       </Container>
       <Stack spacing={2} sx={{ width: "100%" }}>
         <Snackbar
@@ -274,8 +247,7 @@ export default function SignUp() {
           autoHideDuration={6000}
         >
           <Alert severity="error" sx={{ width: "100%" }}>
-            {/* {error?.data?.SQLErrors.uniqueError?.cause?.id_user} */}
-            Satu akun hanya bisa memiliki 1 akun owner
+            Satu akun hanya bisa memiliki 1 akun Usaha
           </Alert>
         </Snackbar>
       </Stack>

@@ -46,7 +46,7 @@ const roomProcedures = {
       return { rooms: result };
     }),
 
-  findRoomById: publicProcedure
+  findOneRoom: publicProcedure
     .input(
       z.object({
         id: z.optional(z.number()),
@@ -97,8 +97,8 @@ const roomProcedures = {
         id: z.number(),
         id_rental: z.number(),
         id_console: z.string(),
-        id_joystick_first_person: z.string(),
-        id_joystick_second_person: z.string(),
+        id_joystick_first_person: z.string().nullable(),
+        id_joystick_second_person: z.string().nullable(),
         console_production_year: z.number(),
         status: z.union([
           z.literal("unuseable"),
@@ -111,8 +111,8 @@ const roomProcedures = {
     )
     .query(async ({ input }) => {
       const room = await editRoomRecord(input).catch(errorHandler);
-      if (typeof room === "number") return { affected: [room] };
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: room });
+      console.log(room);
+      return { room };
     }),
   deleteRoom: protectedProcedure
     .input(
@@ -121,7 +121,7 @@ const roomProcedures = {
       })
     )
     .query(async ({ input }) => {
-      const room = await deleteRoomRecord(input.id).catch(errorHandler);
+      const room = await deleteRoomRecord({ id: input.id }).catch(errorHandler);
       if (typeof room === "number") return { affected: [room] };
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", cause: room });
     }),

@@ -2,7 +2,6 @@ import * as React from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import CssBaseline from "@mui/material/CssBaseline";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import Box from "@mui/material/Box";
 import { styled, alpha } from "@mui/material/styles";
@@ -12,9 +11,23 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import IconButton from "@mui/material/IconButton";
+import Link from "next/link";
+import cookies from "@/lib/cookies";
+import { useRouter } from "next/router";
+import AppContext from "@/context/app";
+import SellIcon from "@mui/icons-material/Sell";
+import {
+  Container,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Stack,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CloseIcon from "@mui/icons-material/Close";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 interface Props {
   window?: () => Window;
@@ -26,22 +39,24 @@ function ElevationScroll(props: Props) {
 
   const trigger = useScrollTrigger({
     disableHysteresis: true,
-    threshold: 0,
+    threshold: 10,
     target: window ? window() : undefined,
   });
 
   return React.cloneElement(children, {
     elevation: trigger ? 4 : 0,
+    style: {
+      backgroundColor: trigger ? "#274594" : "transparent",
+    },
   });
 }
 
 export default function ElevateAppBar() {
   return (
     <>
-      <CssBaseline />
       <ElevationScroll>
-        <AppBar sx={{ backgroundColor: "background.primary" }}>
-          <Toolbar color="black">
+        <AppBar>
+          <Toolbar color="black" sx={{ padding: 0 }}>
             <PrimarySearchAppBar />
           </Toolbar>
         </AppBar>
@@ -92,9 +107,13 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  React.useState<null | HTMLElement>(null);
+  const [userContext, setUserContext] = React.useContext(AppContext);
+  const [expandSearch, setExpandSearch] = React.useState(false);
+  const [seacrhHistory, setSeacrhHistory] = React.useState<string[]>([]);
+  const [search, setSeacrh] = React.useState<string>("");
 
   const isMenuOpen = Boolean(anchorEl);
+  const router = useRouter();
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -104,7 +123,32 @@ export function PrimarySearchAppBar() {
     setAnchorEl(null);
   };
 
+  const handleHistoryChange = (arr: string[]) => {
+    setSeacrhHistory(arr);
+  };
+
+  const handleHistoryClick = (history: string) => {
+    setSeacrh(history);
+  };
+
+  const handleSearchChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    setSeacrh(evt.currentTarget.value);
+  };
+
+  const handleSubmitSearch = (evt: React.FormEvent<HTMLFormElement>) => {
+    evt.preventDefault();
+    if (evt.currentTarget.value === "") return;
+    const data = new FormData(evt.currentTarget);
+    setSeacrhHistory([data.get("search")?.toString() ?? "", ...seacrhHistory]);
+    setExpandSearch(false);
+    router.push({
+      query: { search: data.get("search")?.toString() ?? "" },
+      pathname: "/search",
+    });
+  };
+
   const menuId = "primary-search-account-menu";
+
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -121,59 +165,184 @@ export function PrimarySearchAppBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem>
+        <Link href={"/account"}>Profile</Link>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          setUserContext &&
+            setUserContext({
+              email: undefined,
+              profile_photo: undefined,
+              token: undefined,
+              user_type: undefined,
+              username: undefined,
+              uuid: undefined,
+            });
+          cookies.destroy();
+          router.replace("/signin");
+        }}
+      >
+        Log Out
+      </MenuItem>
     </Menu>
   );
 
   return (
     <>
-      <Typography
-        variant="h6"
-        noWrap
-        component="div"
-        sx={{ display: { xs: "none", sm: "block" } }}
+      <Container
+        sx={{
+          padding: 1,
+          height: expandSearch ? "100vh" : "fit-content",
+          backgroundColor: expandSearch ? "background.paper" : "transparent",
+        }}
       >
-        MUI
-      </Typography>
-      <Search>
-        <SearchIconWrapper>
-          <SearchIcon />
-        </SearchIconWrapper>
-        <StyledInputBase
-          placeholder="Search…"
-          inputProps={{ "aria-label": "search" }}
-        />
-      </Search>
-      <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ display: { xs: "flex", md: "flex" }, marginLeft: "auto" }}>
-        {/* <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
+        <Stack
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          component="form"
+          onSubmit={handleSubmitSearch}
         >
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton> */}
-        <IconButton
-          size="large"
-          edge="end"
-          aria-label="account of current user"
-          aria-controls={menuId}
-          aria-haspopup="true"
-          onClick={handleProfileMenuOpen}
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
-      </Box>
-      {renderMenu}
+          {expandSearch && (
+            <IconButton onClick={() => setExpandSearch(false)}>
+              <ArrowBackIcon sx={{ color: "black", width: 30, height: 30 }} />
+            </IconButton>
+          )}
+          <Search
+            sx={{
+              height: "fit-content",
+              backgroundColor: "black!",
+              width: expandSearch ? "100%" : "70%",
+            }}
+          >
+            <SearchIconWrapper>
+              <SearchIcon sx={{ color: expandSearch ? "black" : "white" }} />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ "aria-label": "search" }}
+              name="search"
+              onChange={handleSearchChange}
+              value={search}
+              sx={
+                expandSearch
+                  ? {
+                      outline: 1,
+                      outlineColor: "rgba(0, 0, 0, 0.5)",
+                      outlineStyle: "solid",
+                      borderRadius: 1,
+                      color: "black",
+
+                      fontSize: "larger",
+                    }
+                  : { color: "white", fontSize: "larger" }
+              }
+              fullWidth
+              onClick={() => setExpandSearch(true)}
+            />
+          </Search>
+          <Box sx={{ flexGrow: 1 }} />
+          {!expandSearch && (
+            <Box
+              sx={{
+                display: { xs: "flex", md: "flex" },
+                marginLeft: "auto",
+                height: "fit-content",
+              }}
+            >
+              <IconButton
+                size="large"
+                color="inherit"
+                sx={{ padding: 1 }}
+                onClick={handleProfileMenuOpen}
+              >
+                {userContext?.user_type === "owner" ? (
+                  <Badge
+                    badgeContent={<SellIcon sx={{ width: 20, height: 20 }} />}
+                    color="success"
+                    sx={{ top: 1 }}
+                    anchorOrigin={{
+                      vertical: "top",
+                      horizontal: "left",
+                    }}
+                  >
+                    <AccountCircle
+                      sx={{
+                        color: "white",
+                        width: 35,
+                        height: 35,
+                      }}
+                    />
+                  </Badge>
+                ) : (
+                  <AccountCircle
+                    sx={{
+                      color: "white",
+                      width: 35,
+                      height: 35,
+                    }}
+                  />
+                )}
+              </IconButton>
+            </Box>
+          )}
+        </Stack>
+        {renderMenu}
+        {expandSearch && (
+          <SearchHistory
+            searchArr={seacrhHistory}
+            onClick={handleHistoryClick}
+            onDelete={handleHistoryChange}
+          />
+        )}
+      </Container>
     </>
+  );
+}
+
+function SearchHistory(props: {
+  searchArr: string[];
+  onDelete?: (param: string[]) => void;
+  onClick?: (param: string) => void;
+}) {
+  return (
+    <List sx={{ height: "calc(100vh-60px)", overflowY: "auto" }}>
+      {props.searchArr.map((data, i) => (
+        <ListItem
+          key={i}
+          secondaryAction={
+            <IconButton
+              edge="end"
+              aria-label="delete"
+              onClick={() =>
+                props.onDelete &&
+                props.onDelete(props.searchArr.filter((e) => e !== data))
+              }
+            >
+              <CloseIcon />
+            </IconButton>
+          }
+        >
+          <ListItemAvatar>
+            <AccessTimeIcon
+              sx={{ color: "rgba(0, 0, 0, 0.5)", width: 30, height: 30 }}
+            />
+          </ListItemAvatar>
+          <ListItemText
+            color="black"
+            primary={
+              <Typography
+                variant="body1"
+                color="black"
+                onClick={() => props.onClick && props.onClick(data)}
+              >
+                {data}
+              </Typography>
+            }
+          />
+        </ListItem>
+      ))}
+    </List>
   );
 }
