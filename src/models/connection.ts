@@ -15,6 +15,7 @@ const sequelizeConnection = new Sequelize(
   {
     ...config[env],
     dialect: "mariadb",
+    // logging: false,
   }
 );
 

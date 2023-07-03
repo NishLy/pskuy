@@ -1,4 +1,4 @@
-import ImageCoursel from "@/pages/__components/image_coursel";
+import ImageCoursel from "@/pages/(__components)/image_coursel";
 import {
   Avatar,
   Box,
@@ -22,21 +22,29 @@ import { appRouter } from "@/pages/api/trpc/[trpc]";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import SuperJSON from "superjson";
-import createContext from "@/pages/api/trpc/context";
+import createTRPCContext from "@/pages/api/trpc/context";
 import trpc from "@/utils/trpc";
 import Rental from "@/models/rental";
-import Category from "@/pages/__components/category";
+import Category from "@/pages/(__components)/category";
+import { useRouter } from "next/router";
 
 export async function getServerSideProps(
   context: GetServerSidePropsContext<{ id: string }>
 ) {
   const helpers = createServerSideHelpers({
     router: appRouter,
-    ctx: await createContext(context),
+    ctx: await createTRPCContext(context),
     transformer: SuperJSON,
   });
 
   const id = parseInt(context.params?.id as string);
+  if (isNaN(id))
+    return {
+      redirect: {
+        permanent: true,
+        destination: "/404",
+      },
+    };
   await helpers.findOneRental.prefetch({ id });
 
   return {
@@ -47,10 +55,25 @@ export async function getServerSideProps(
 export default function Page(
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
+  const router = useRouter();
   const [collapse, setCollapse] = React.useState(true);
-  const { data } = trpc.findOneRental.useQuery({
-    id: parseInt(props.id),
-  });
+  const { data } = trpc.findOneRental.useQuery(
+    {
+      id: parseInt(props.id),
+    },
+    {
+      onSuccess(data) {
+        if (data.rental === null)
+          router.replace({
+            query: {
+              message:
+                "Ruangan dengan tidak ditemukan \n Id : " + router.query.id,
+            },
+            pathname: "/404",
+          });
+      },
+    }
+  );
 
   const dataRental = data?.rental as Rental;
 
@@ -132,7 +155,18 @@ export default function Page(
                 justifyContent: "center",
               }}
             >
-              <IconButton sx={{ padding: 0 }}>
+              <IconButton
+                sx={{ padding: 0 }}
+                onClick={() =>
+                  router.push({
+                    query: {
+                      lat: dataRental?.latitude,
+                      lng: dataRental?.longitude,
+                    },
+                    pathname: "/explore",
+                  })
+                }
+              >
                 <NearMeIcon sx={{ width: 30, height: 30 }} />
               </IconButton>
               <Typography
@@ -170,7 +204,7 @@ export default function Page(
           </ExpandMore>
         </CardActions>
       </Card>
-      <Category />
+      <Category id_rental={props.id} />
     </Stack>
   );
 }

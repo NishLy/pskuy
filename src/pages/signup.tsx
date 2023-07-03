@@ -12,8 +12,10 @@ import Container from "@mui/material/Container";
 import client from "@/utils/trpc";
 import { USER } from "@/interfaces/user";
 import { useRouter } from "next/router";
-import Loading from "./__components/loading";
-import Copyright from "./__components/copyright";
+import Loading from "./(__components)/loading";
+import Copyright from "./(__components)/copyright";
+import { LOGO_IMAGE_PATH } from "@/static/path";
+import { PRIMARY_COLOR } from "@/static/theme";
 
 export default function SignUp() {
   const [userData, setUserData] = React.useState<USER | null>(null);
@@ -42,7 +44,6 @@ export default function SignUp() {
         router.replace("/signin");
       },
       onError(error) {
-        console.log(error.data);
         if (error.data?.SQLErrors.uniqueError) {
           setErrors(error.data.SQLErrors.uniqueError);
         }
@@ -85,13 +86,22 @@ export default function SignUp() {
             alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+          <Avatar
+            sx={{
+              m: 1,
+              width: 50,
+              height: 50,
+              padding: 0.5,
+              bgcolor: PRIMARY_COLOR,
+            }}
+            src={LOGO_IMAGE_PATH}
+          >
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -117,12 +127,13 @@ export default function SignUp() {
                   required
                   fullWidth
                   id="number"
+                  placeholder="08XXXXXXXXXX"
                   inputProps={{
                     minlength: 11,
                     maxlength: 14,
                     pattern: "[0-9]{11,}",
                   }}
-                  label="Nomor Telepon Aktif"
+                  label="Nomor Telepon "
                   title="Nomor Telepon"
                   autoFocus
                 />
@@ -169,22 +180,15 @@ export default function SignUp() {
                   helperText={!isPasswordMatch && "Password tidak sama!"}
                 />
               </Grid>
-              {/* <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid> */}
             </Grid>
             <Button
               type="submit"
               fullWidth
               variant="contained"
+              size="large"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign Up
+              Daftar
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>

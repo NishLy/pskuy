@@ -19,16 +19,17 @@ type RENTAL_OPTS = {
 
 export const findAllRentalRecord = (
   input: Partial<Rental>,
-  opts: RENTAL_OPTS = { offset: 0 }
-): Promise<Rental[]> => {
-  let inputName: WhereOptions<any> | undefined;
+  offset = 0,
+  limit = true
+): Promise<{ rows: Rental[]; count: number }> => {
+  let inputName: WhereOptions<RENTAL_DATA> | undefined;
   if (input.name)
     inputName = { ...input, name: { [Op.like]: "%" + input.name + "%" } };
   return new Promise((resolve, reject) => {
-    Rental.findAll({
+    Rental.findAndCountAll({
       where: inputName ? inputName : input,
-      offset: opts.offset,
-      limit: 20,
+      offset,
+      limit: limit ? 20 : undefined,
     })
       .then((result) => resolve(result))
       .catch((err) => reject(err));

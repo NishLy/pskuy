@@ -15,6 +15,9 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
       },
+      profile_image: {
+        type: Sequelize.STRING,
+      },
       number: {
         allowNull: false,
         type: Sequelize.STRING(13),

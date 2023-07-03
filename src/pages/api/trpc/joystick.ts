@@ -1,5 +1,5 @@
 import { publicProcedure } from "@/server/trpc";
-import { CONSOLE_QUERY, showAllConsole } from "@/services/console";
+import { CONSOLE_QUERY } from "@/services/console";
 import { showAllJoystick } from "@/services/joysticks";
 import { TRPCError } from "@trpc/server";
 import z from "zod";

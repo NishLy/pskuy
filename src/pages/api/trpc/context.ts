@@ -6,7 +6,7 @@ type req = IncomingMessage & {
   }>;
 };
 
-export const createContext = async ({ req }: { req: req }) => {
+export const createTRPCContext = async ({ req }: { req: req }) => {
   return {
     uuid: req.cookies.uuid,
     username: req.cookies.name,
@@ -17,4 +17,4 @@ export const createContext = async ({ req }: { req: req }) => {
   };
 };
 
-export default createContext;
+export default createTRPCContext;

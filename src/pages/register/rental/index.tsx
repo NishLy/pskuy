@@ -6,14 +6,14 @@ import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import client from "@/utils/trpc";
 import { useRouter } from "next/router";
 import { Avatar, Link } from "@mui/material";
 import getBase64 from "@/lib/getBase64";
 import RENTAL_DATA from "@/interfaces/rental";
 import cookies from "@/lib/cookies";
-import ImageCoursel from "@/pages/__components/image_coursel";
-import MapSelect from "@/pages/__components/map_selector";
+import ImageCoursel from "@/pages/(__components)/image_coursel";
+import MapSelect from "@/pages/(__components)/map_selector";
+import trpc from "@/utils/trpc";
 
 export default function SignUp() {
   const [registerData, setRegisterData] = React.useState<RENTAL_DATA>({
@@ -38,7 +38,7 @@ export default function SignUp() {
   const router = useRouter();
 
   //api to send data Rental
-  client.registerRental.useQuery(registerData, {
+  trpc.registerRental.useQuery(registerData, {
     enabled: register,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
@@ -89,7 +89,6 @@ export default function SignUp() {
     }
   };
 
-  //when form is submitted
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -121,8 +120,7 @@ export default function SignUp() {
 
   async function handleLogoChange() {
     if (!imageLogoElement.current) return;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const fileImages = imageLogoElement.current?.files![0];
+    const fileImages = imageLogoElement.current?.files?.[0];
     if (!fileImages) return;
     setLogoImages((await getBase64(fileImages)) as string);
   }
@@ -140,18 +138,17 @@ export default function SignUp() {
           controlled={{ markerOnChange: handlePostionChange }}
         />
       )}
-      <Container component="main" maxWidth="xs">
+      <Container sx={{ backgroundColor: "background.paper", py: 2 }}>
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 5,
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
           }}
         >
-          <Typography component="h1" variant="h5" mb={4}>
-            Masukan Detail Rentalmu Disini
+          <Typography variant="h6" mb={2}>
+            Daftarkan rentalmu disini
           </Typography>
           <Avatar
             sx={{ height: 80, width: 80 }}
@@ -184,7 +181,6 @@ export default function SignUp() {
               <Grid item xs={12}>
                 <ImageCoursel
                   controlled={{
-                    setState: setImages,
                     setter: handleImagesClick,
                   }}
                   images={images}

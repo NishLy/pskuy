@@ -14,5 +14,5 @@ export interface ROOM_DATA {
   time_end_current_rent?: string | null;
   times_viewed?: number;
   times_booked?: number;
-  images_directory?: string;
+  room_images?: string;
 }

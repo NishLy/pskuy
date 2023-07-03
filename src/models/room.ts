@@ -1,5 +1,5 @@
 "use strict";
-import { Model, DataTypes, ModelStatic } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelizeConnection from "./connection";
 import { TypeFunctionalityStatus } from "../interfaces/status";
 import Rental from "./rental";
@@ -21,17 +21,7 @@ export default class Room extends Model {
   declare time_end_current_rent: string | null;
   declare times_viewed: number;
   declare times_booked: number;
-  declare images_directory?: string;
-
-  /**
-   * Helper method for defining associations.
-   * This method is not a part of Sequelize lifecycle.
-   * The `models/index` file will call this method automatically.
-   */
-  // static associate(models: { Rental: ModelStatic<Model<any, any>> }) {
-  //   // define association here
-  //   this.belongsTo(models.Rental, { as: "Rental" });
-  // }
+  declare room_images?: string;
 }
 Room.init(
   {
@@ -75,8 +65,8 @@ Room.init(
       allowNull: false,
       type: DataTypes.INTEGER.UNSIGNED,
     },
-    images_directory: {
-      type: DataTypes.STRING,
+    room_images: {
+      type: DataTypes.TEXT,
     },
     status: {
       allowNull: false,

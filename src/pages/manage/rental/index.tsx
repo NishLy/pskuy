@@ -1,27 +1,37 @@
 import React from "react";
 import client from "@/utils/trpc";
-import Rental from "@/models/rental";
 import AddIcon from "@mui/icons-material/Add";
 import { Alert, Fab, List, ListItem } from "@mui/material";
 import Link from "next/link";
 import cookies from "@/lib/cookies";
-import RentalCard from "./__components/card";
+import RentalCard from "./(__components)/card";
+import RENTAL_DATA from "@/interfaces/rental";
+import useAuth from "@/hooks/useAuth";
+import RedirectSignin from "@/pages/(__components)/redirect_signin";
 
 export default function index() {
-  const { data, refetch } = client.showAllRentalProtected.useQuery(
+  /* The line `if (!useAuth()) return <RedirectSignin />;` is checking if the user is authenticated. If
+ the user is not authenticated, it returns the `<RedirectSignin />` component, which is likely a
+ component that redirects the user to the sign-in page. This is a way to protect the content of the
+ `index` component and ensure that only authenticated users can access it. */
+  if (!useAuth()) return <RedirectSignin />;
+  /* The code is using the `useQuery` hook from the `client.findAllOwnerRental` object to fetch data from
+the server. */
+  const { data, refetch } = client.findAllOwnerRental.useQuery(
     {
       uuid: cookies.get("uuid") ?? "",
     },
-    { refetchOnMount: true }
+    { refetchOnMount: true, refetchOnWindowFocus: true }
   );
+
   return (
     <>
       <List sx={{ width: "100%" }}>
-        {data && data.rentals.length !== 0 ? (
-          (data.rentals as Rental[]).map((rental, index) => (
+        {data?.rentals && data.rentals?.rows.length !== 0 ? (
+          (data.rentals?.rows as RENTAL_DATA[]).map((rental, index) => (
             <ListItem
               alignItems="flex-start"
-              key={index + rental.id}
+              key={index + (rental.id ?? 0)}
               sx={{ minWidth: "100%" }}
             >
               <RentalCard {...rental} refecth={refetch} />

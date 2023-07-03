@@ -28,9 +28,9 @@ const trpc = createTRPCNext<AppRouter>({
       ],
       headers: () => {
         if (ctx?.req) {
-          // on ssr, forward client's headers to the server
           return {
             ...ctx.req.headers,
+            // Cookie: ctx.req.headers["cookie"],
             "x-ssr": "1",
           };
         }

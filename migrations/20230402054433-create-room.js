@@ -40,8 +40,8 @@ module.exports = {
           key: "id",
         },
       },
-      images_directory: {
-        type: Sequelize.STRING,
+      room_images: {
+        type: Sequelize.TEXT,
       },
       console_production_year: {
         allowNull: false,

@@ -4,9 +4,9 @@ import { useTheme } from "@mui/material/styles";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import RoomGrid from "../__components/room_grid";
+import RoomGrid from "../(__components)/room_grid";
 import { useRouter } from "next/router";
-import RentalCardSearch from "../__components/rental_card";
+import RentalCardSearch from "../(__components)/rental_card";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -77,7 +77,7 @@ export default function Search() {
         onChangeIndex={handleChangeIndex}
       >
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <RoomGrid category={router.query.search as string} />
+          <RoomGrid active={true} category={router.query.search as string} />
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
           <RentalCardSearch searchQuery={router.query.search as string} />

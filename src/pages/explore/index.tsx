@@ -2,9 +2,20 @@
 import React from "react";
 import { Fab } from "@mui/material";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
-import { ScriptProps } from "next/script";
-import AppContext from "@/context/app";
-import RedirectSignin from "../__components/redirect_signin";
+import { renderToString } from "react-dom/server";
+import trpc from "@/utils/trpc";
+import Rental from "@/models/rental";
+import RENTAL_DATA from "@/interfaces/rental";
+import Image from "next/image";
+import { ERROR_IMAGE_PATH } from "@/static/path";
+import useAuth from "@/hooks/useAuth";
+import RedirectSignin from "../(__components)/redirect_signin";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import { InferGetStaticPropsType } from "next";
+import { appRouter } from "../api/trpc/[trpc]";
+import SuperJSON from "superjson";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 const defaultProps = {
   center: {
@@ -14,52 +25,94 @@ const defaultProps = {
   zoom: 15,
 };
 
-type Props = {
-  defaultMapsProp?: {
-    center: {
-      Iat: number;
-      Ing: number;
-    };
+export async function getStaticProps() {
+  const helpers = createServerSideHelpers({
+    router: appRouter,
+    ctx: {
+      uuid: undefined,
+      username: undefined,
+      user_type: undefined,
+      email: undefined,
+      profile_photo: undefined,
+      token: undefined,
+    },
+    transformer: SuperJSON,
+  });
+  await helpers.showAllRental.prefetch({ parameters: {}, limit: false });
+  return {
+    props: JSON.parse(
+      JSON.stringify({
+        trpcState: helpers.dehydrate(),
+      })
+    ),
+    revalidate: 1,
   };
-  moveable?: boolean;
-  controlled?: {
-    markerOnChange: () => void;
-  };
-} & ScriptProps;
+}
 
-export default function Page(props: Props) {
-  const [userContext] = React.useContext(AppContext);
-  if (!userContext?.token || !userContext?.uuid) return <RedirectSignin />;
-
+export default function Page(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  props: InferGetStaticPropsType<typeof getStaticProps>
+) {
+  if (!useAuth()) return <RedirectSignin />;
+  const router = useRouter();
   const mapRef = React.useRef();
   let map: google.maps.Map;
-  let infoWindow: google.maps.InfoWindow;
+
+  const { data, isSuccess } = trpc.showAllRental.useQuery({
+    parameters: {},
+    limit: false,
+  });
 
   React.useEffect(() => {
-    map = new window.google.maps.Map(
-      mapRef.current ?? document.querySelector("#mapWrapper")!,
-      defaultProps
-    );
+    async function initMap(): Promise<void> {
+      const { Map } = (await google.maps.importLibrary(
+        "maps"
+      )) as google.maps.MapsLibrary;
+      map = new Map(
+        mapRef.current ??
+          (document.querySelector("#mapWrapper")! as HTMLElement),
+        router.query.lat && router.query.lng
+          ? {
+              ...defaultProps,
+              center: {
+                lat: parseInt(router.query.lat as string),
+                lng: parseInt(router.query.lng as string),
+              },
+              zoom: 5,
+            }
+          : defaultProps
+      );
+      if (data?.rentals) {
+        for (let index = 0; index < data.rentals.rows.length; index++) {
+          const dataRental = data.rentals.rows[index] as Rental;
+          const infoWindow = new google.maps.InfoWindow({
+            content: renderToString(infoWindowRental(dataRental)),
+            ariaLabel: dataRental.name,
+            maxWidth: 500,
+          });
+          const marker = new google.maps.Marker({
+            position: {
+              lat: dataRental.latitude,
+              lng: dataRental.longitude,
+            },
+            title: dataRental.name,
+            animation: google.maps.Animation.DROP,
+            icon: "/images/maps/pskuy_marker.png",
+            map,
+          });
 
-    infoWindow = new window.google.maps.InfoWindow();
-
-    const marker = new google.maps.Marker({
-      position: {
-        lat: -6.888701,
-        lng: 109.668289,
-      },
-      draggable: props.moveable,
-      animation: google.maps.Animation.DROP,
-      map: map,
-    });
-
-    props.controlled &&
-      google.maps.event.addListener(marker, "dragend", () => {
-        if (!marker.getPosition()) return;
-        map.setCenter(marker.getPosition()!);
-        props.controlled && props.controlled.markerOnChange();
-      });
-  });
+          marker.addListener("click", () => {
+            map.setZoom(12);
+            infoWindow.open({
+              anchor: marker,
+              map,
+            });
+          });
+        }
+      }
+    }
+    initMap();
+  }, [isSuccess]);
 
   function handleLocationError(
     browserHasGeolocation: boolean,
@@ -76,6 +129,8 @@ export default function Page(props: Props) {
   }
 
   function handleClickCurrentLocation() {
+    const infoWindow = new google.maps.InfoWindow();
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position: GeolocationPosition) => {
@@ -112,17 +167,42 @@ export default function Page(props: Props) {
           top: 0,
           left: 0,
         }}
+      ></div>
+      <Fab
+        sx={{ position: "fixed", bottom: 70, left: 10, zIndex: 10000 }}
+        color="primary"
+        aria-label="Lokasi Saya"
+        id="fabMap"
+        onClick={handleClickCurrentLocation}
       >
-        <Fab
-          sx={{ position: "fixed", bottom: 70, left: 10, zIndex: 100 }}
-          color="primary"
-          aria-label="Lokasi Saya"
-          id="fabMap"
-          onClick={handleClickCurrentLocation}
-        >
-          <MyLocationIcon />
-        </Fab>
-      </div>
+        <MyLocationIcon />
+      </Fab>
     </>
+  );
+}
+
+export function infoWindowRental(props: RENTAL_DATA) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <Image
+        src={props.rental_images?.split(",")[0] ?? ERROR_IMAGE_PATH}
+        height="100"
+        width="200"
+        loading="lazy"
+        style={{ aspectRatio: "16/9", objectFit: "cover" }}
+        alt={props.name}
+      />
+      <div style={{ marginTop: 5 }}>
+        <h2 style={{ margin: 0 }}>{props.name}</h2>
+        <p>{props.address}</p>
+        <Link href={"/view/rental/" + props.id}>Lihat Rental</Link>
+      </div>
+    </div>
   );
 }

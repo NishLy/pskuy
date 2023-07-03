@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid";
@@ -13,7 +13,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import ImageCoursel from "@/pages/__components/image_coursel";
+import ImageCoursel from "@/pages/(__components)/image_coursel";
 import getBase64 from "@/lib/getBase64";
 import Joystick from "@/models/joystick";
 import Console from "@/models/console";
@@ -21,14 +21,21 @@ import Console from "@/models/console";
 import trpc from "@/utils/trpc";
 import { ROOM_DATA } from "@/interfaces/room";
 import { useRouter } from "next/dist/client/router";
-import Room from "@/models/room";
-import Loading from "@/pages/__components/loading";
+import Loading from "@/pages/(__components)/loading";
 import { appRouter } from "@/pages/api/trpc/[trpc]";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import SuperJSON from "superjson";
-import createContext from "@/pages/api/trpc/context";
+import createTRPCContext from "@/pages/api/trpc/context";
 
+/**
+ * The above function is a TypeScript React function that uses the getServerSideProps method to fetch
+ * data for a specific room based on the provided context.
+ * @param context - The `context` parameter is an object that contains information about the
+ * server-side rendering context. It includes properties such as `req` (the incoming HTTP request
+ * object), `res` (the outgoing HTTP response object), `query` (an object containing the query
+ * parameters), and more.
+ */
 export async function getServerSideProps(
   context: GetServerSidePropsContext<{
     id: string;
@@ -38,7 +45,7 @@ export async function getServerSideProps(
 ) {
   const helpers = createServerSideHelpers({
     router: appRouter,
-    ctx: await createContext(context),
+    ctx: await createTRPCContext(context),
     transformer: SuperJSON,
   });
 
@@ -46,8 +53,6 @@ export async function getServerSideProps(
     id: parseInt(context.query.id as string),
     id_rental: parseInt(context.query.id_rental as string),
   });
-
-  console.log("selesai di");
 
   return {
     props: JSON.parse(
@@ -76,14 +81,21 @@ export default function Page(
     id_rental: parseInt(router.query.id as string),
     information: "",
     status: "good",
+    room_images: undefined,
     price_per_hour: -1,
   });
 
-  const [images, setImages] = React.useState<string[]>([]);
+  const [images, setImages] = React.useState<{
+    existed: string[];
+    new: string[];
+  }>();
   const [upload, setUpload] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState(true);
   const imageFileElement = React.useRef<HTMLInputElement>(null);
 
+  /* The above code is making a query using the `findOneRoom` RPC (Remote Procedure Call) with the
+  provided `id` and `id_rental` parameters. It sets the `refetchOnWindowFocus` option to `true`,
+  which means the query will be automatically refetched when the window regains focus. */
   trpc.findOneRoom.useQuery(
     {
       id: props.id,
@@ -94,73 +106,111 @@ export default function Page(
       onSuccess(data) {
         setLoading(false);
         setRoomData(data.room as ROOM_DATA);
-        setImages(
-          (data.room as ROOM_DATA).images_directory?.split(",") ?? images
-        );
       },
-      onError(err) {
-        console.log(err.data);
+      onError() {
         setLoading(false);
       },
     }
   );
 
+  /* The above code is using the `useQuery` hook from the `trpc` library in a TypeScript React
+  application. */
   trpc.editRoom.useQuery(
     { ...roomData, id: parseInt(router.query.id as string) },
     {
       enabled: upload,
-      onSuccess(data: { room: Room }) {
-        console.log(data);
-        handleFileUpload(data.room?.id as number);
-      },
-      onError(data) {
-        console.log(data.data);
+      onSuccess(data) {
+        handleFileUpload(data.id as number);
       },
     }
   );
 
+  /**
+   * The function `handleFileUpload` is used to upload image files and update a room's information.
+   * @param {number} id - The `id` parameter is a number that represents the ID of a rental.
+   */
   const handleFileUpload = async (id: number) => {
-    const file = imageFileElement?.current?.files?.[0];
-    if (file) {
-      const data = new FormData();
-      data.set("image", file);
-      data.set("id", id.toString());
+    const files = imageFileElement?.current?.files;
 
-      fetch("/api/upload/images/room", {
-        method: "POST",
-        body: data,
+    const data = new FormData();
+    Array.from(files ?? []).forEach((e) => {
+      data.append(e.name, e);
+    });
+    data.set("id", id.toString());
+    data.set("changed", id.toString());
+    fetch("/api/upload/images/edit-room", {
+      method: "POST",
+      body: data,
+    })
+      .then((res) => {
+        res.ok ? router.push("/manage/rental/" + props.id_rental) : null;
       })
-        .then((res) => {
-          console.log(res);
-          res.ok ? router.push("/manage/rental/" + props.id_rental) : null;
-        })
-        .catch((err) => {
-          if (err) throw new Error(err);
-        });
-    }
+      .catch((err) => {
+        if (err) throw new Error(err);
+      });
+
     router.push("/manage/rental/" + props.id_rental);
   };
 
+  /**
+   * The handleSubmit function prevents the default form submission behavior and sets the upload state
+   * to true.
+   * @param event - The event parameter is of type React.FormEvent<HTMLFormElement>. It represents the
+   * form submission event that triggered the handleSubmit function.
+   */
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setUpload(true);
   };
 
-  const handleImageSelected = async () => {
+  /**
+   * The handleImageClick function is used to trigger a click event on an image file input element.
+   */
+  const handleImageClick = async () => {
     imageFileElement.current?.click();
   };
 
-  const handleImageChange = () => {
-    const image = imageFileElement.current?.files;
-    if (!image) return;
-    Array.from(image).map(async (e: File) => {
-      setImages([...images, (await getBase64(e)) as string]);
+  /**
+   * The function handles the change event of an image input element, retrieves the selected image
+   * files, converts them to base64 strings, and updates the state with the new images.
+   * @returns The function `handleImageChange` is returning nothing (i.e., `undefined`).
+   */
+  async function handleImageChange() {
+    if (!imageFileElement.current) return;
+    const fileImages = imageFileElement?.current.files;
+    if (!fileImages) return;
+    const arr: string[] = [];
+    Array.from(fileImages).map(async (e: File) => {
+      getBase64(e).then((res) => {
+        arr.push(res as string);
+        setImages({ existed: images?.existed ?? [], new: [...arr] });
+      });
     });
-    document
-      .querySelector("#imageCoursel")
-      ?.scrollBy({ left: -140, behavior: "smooth" });
-  };
+  }
 
+  /**
+   * The function handles the change of an image in a carousel by updating the state of the images and
+   * room data.
+   * @param {string} src - The `src` parameter is a string that represents the source of an image.
+   */
+  function handleImageCourselChange(src: string) {
+    setImages({
+      existed: images?.existed?.filter((e) => e !== src) ?? [],
+      new: images?.new ?? [],
+    });
+    setRoomData({
+      ...roomData,
+      room_images:
+        roomData.room_images
+          ?.split(",")
+          .filter((e) => e !== src)
+          .toString() ?? roomData.room_images,
+    });
+  }
+
+  /* The above code is defining a function called `handleRoomDataChange` that is used to handle
+  changes in input fields in a form. It takes an event object as an argument, which represents the
+  change event triggered by the user. */
   const handleRoomDataChange = (
     evt: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -176,13 +226,13 @@ export default function Page(
       case "production":
         setRoomData({
           ...roomData,
-          price_per_hour: parseInt(evt.currentTarget.value),
+          console_production_year: parseInt(evt.currentTarget.value),
         });
         break;
       case "information":
         setRoomData({
           ...roomData,
-          id_console: evt.currentTarget.value,
+          information: evt.currentTarget.value,
         });
         break;
       case "condition":
@@ -194,8 +244,14 @@ export default function Page(
     }
   };
 
+  /**
+   * The function `handleSelectChange` is used to update the `roomData` state based on the selected
+   * value of different dropdown menus.
+   * @param {SelectChangeEvent} evt - The parameter "evt" is an event object that is passed to the
+   * function when the select element's value is changed. It contains information about the event, such
+   * as the target element (the select element that triggered the event) and the new value selected.
+   */
   function handleSelectChange(evt: SelectChangeEvent) {
-    console.log(evt);
     switch (evt.target.name) {
       case "joystick1":
         setRoomData({
@@ -218,6 +274,22 @@ export default function Page(
     }
   }
 
+  /**
+   * The function returns an array of strings that contains both existing and new room images.
+   * @returns an array of strings.
+   */
+  function getArrayOfImages(): string[] {
+    if (!images) {
+      if (roomData.room_images) {
+        setImages({
+          existed: roomData.room_images?.split(",") ?? [],
+          new: [],
+        });
+      }
+    }
+    return [...(images?.existed ?? []), ...(images?.new ?? [])];
+  }
+
   return (
     <>
       {loading && <Loading />}
@@ -234,8 +306,11 @@ export default function Page(
           }}
         >
           <ImageCoursel
-            controlled={{ setState: setImages, setter: handleImageSelected }}
-            images={images}
+            controlled={{
+              onImageDelete: handleImageCourselChange,
+              setter: handleImageClick,
+            }}
+            images={getArrayOfImages()}
           />
 
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>

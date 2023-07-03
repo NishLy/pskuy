@@ -23,7 +23,7 @@ export async function POST(request: NextApiRequest, res: NextApiResponse) {
     if (err) return res.status(500).end({ err });
     if (!files) return res.status(500).end({ err });
 
-    saveMultipleFile(files, { id: fields.id as string })
+    return saveMultipleFile(files, { id: fields.id as string })
       .then((result) => {
         Rental.update(
           { rental_logo: result.logo, rental_images: result.images.toString() },

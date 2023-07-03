@@ -1,7 +1,7 @@
 import { SQLUniqueError } from "@/error/uniqueError";
 import Owner from "@/models/owner";
 import { protectedProcedure, publicProcedure } from "@/server/trpc";
-import { findOwnerRecord, registerOwner } from "@/services/owner";
+import { findOneOwnerRecord, registerOwner } from "@/services/owner";
 import { TRPCError } from "@trpc/server";
 import { ForeignKeyConstraintError, UniqueConstraintError } from "sequelize";
 import z from "zod";
@@ -30,9 +30,7 @@ const ownerProcedures = {
   getOwner: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const owner = await findOwnerRecord(input.id).catch((err) => {
-        errorHandler;
-      });
+      const owner = await findOneOwnerRecord(input.id).catch(errorHandler);
       return owner;
     }),
 };

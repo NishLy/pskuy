@@ -19,14 +19,20 @@ const rentalProcedures = {
 input parameter `name` which is a string. It then calls the `findAllRentalRecord` function with the
 input parameter and catches any errors with the `errorHandler` function. Finally, it returns an
 object with a `rentals` property containing the result of the `findAllRentalRecord` function. */
-  showAllRental: publicProcedure
+  showAllRental: protectedProcedure
     .input(
       z.object({
-        name: z.optional(z.string()),
+        parameters: z.object({ name: z.optional(z.string()) }),
+        offset: z.optional(z.number()),
+        limit: z.optional(z.boolean()),
       })
     )
     .query(async ({ input }) => {
-      const rentals = await findAllRentalRecord(input).catch(errorHandler);
+      const rentals = await findAllRentalRecord(
+        input.parameters,
+        input.offset,
+        input.limit
+      ).catch(errorHandler);
       return { rentals };
     }),
 
@@ -36,7 +42,7 @@ of the owner. It then calls the `findAllRentalRecord` function with the input pa
 any errors with the `errorHandler` function. Finally, it returns an object with a `rentals` property
 containing the result of the `findAllRentalRecord` function. This procedure is used to retrieve all
 rental records associated with a specific owner. */
-  showAllRentalProtected: protectedProcedure
+  findAllOwnerRental: protectedProcedure
     .input(
       z.object({
         uuid: z.string().min(36, "ID tidak valid!"),
@@ -46,7 +52,7 @@ rental records associated with a specific owner. */
       const rentals = await findAllRentalRecord({ id_owner: input.uuid }).catch(
         errorHandler
       );
-      if (!(rentals instanceof Array)) return { rentals: [] };
+
       return { rentals };
     }),
   /* This code defines a TRPC procedure called `registerRental` that is protected and requires

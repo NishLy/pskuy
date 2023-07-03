@@ -5,9 +5,9 @@ export enum TypeFunctionalityStatus {
 }
 
 export enum TypeTransactionsStatus {
-  finised = "finished",
+  finished = "finished",
   proccess = "proccess",
   ongoing = "ongoing",
-  complaint = "completed",
+  completed = "completed",
   cancel = "cancel",
 }

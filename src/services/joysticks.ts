@@ -9,6 +9,6 @@ export const showAllJoystick = ({
   return new Promise((resolve, reject) => {
     Joystick.findAll({ where: manufactur ? { manufactur } : undefined })
       .then((res) => resolve(res))
-      .catch((err) => resolve(err));
+      .catch((err) => reject(err));
   });
 };

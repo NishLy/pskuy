@@ -17,14 +17,14 @@ import Alert from "@mui/material/Alert";
 import { Snackbar, Stack } from "@mui/material";
 import handleFieldError from "@/utils/handle_field_errors";
 import cookies from "@/lib/cookies";
-import Copyright from "@/pages/__components/copyright";
-import Loading from "@/pages/__components/loading";
-import AppContext from "@/context/app";
+import Copyright from "@/pages/(__components)/copyright";
+import Loading from "@/pages/(__components)/loading";
+import UserContext from "@/context/app";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
 export default function RegisterOwner() {
-  const [userContext] = React.useContext(AppContext);
+  const [userContext] = React.useContext(UserContext);
   const [ownerData, setUserData] = React.useState<OWNER>({
     id_user: userContext?.uuid ?? "",
     name: "",

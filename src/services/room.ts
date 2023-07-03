@@ -1,5 +1,7 @@
+import optsQuery from "@/interfaces/query";
 import { ROOM_DATA } from "@/interfaces/room";
-import { Console, Rental } from "@/models/associations";
+import { Console, Rental, Room as RoomAssoc } from "@/models/associations";
+import sequelizeConnection from "@/models/connection";
 // import Rental from "@/models/rental";
 import Room from "@/models/room";
 import { Op } from "sequelize";
@@ -20,38 +22,47 @@ export const editRoomRecord = (input: ROOM_DATA): Promise<[number]> => {
   });
 };
 
-type associatedType = { id: number; id_owner: string };
-interface AssociatedRental extends Rental {
-  Rooms: Room[];
-}
+type associatedType = { id_rental: number; id_owner: string };
 export const showAssociatedRoomRecord = (
-  input: associatedType
-): Promise<AssociatedRental | null> => {
+  input: associatedType,
+  offset = 0
+): Promise<{
+  rows: RoomAssoc[];
+  count: number;
+}> => {
   return new Promise((resolve, reject) => {
-    Rental.findOne({
-      where: { id: input.id, id_owner: input.id_owner },
+    Room.findAndCountAll({
       include: [
         {
-          model: Room,
-          include: [{ model: Console }],
+          model: Rental,
+          attributes: [],
+          where: { id: input.id_rental, id_owner: input.id_owner },
+        },
+        {
+          model: Console,
         },
       ],
+      limit: 10,
+      offset,
     })
-      .then((res) => {
-        resolve(res as AssociatedRental);
-      })
+      .then((res) => resolve(res))
       .catch((err) => reject(err));
   });
 };
 
 export const findAllRoomWithRental = (
-  input: Partial<ROOM_DATA> & { console_name?: string }
-): Promise<Room[]> => {
+  input: Partial<ROOM_DATA> & { console_name?: string; offset?: number },
+  offset = 0
+): Promise<{ rows: Room[]; count: number }> => {
+  console.log(input);
+  if (!input.id_rental) delete input.id_rental;
   return new Promise((resolve, reject) => {
+    delete input.offset;
     if (input.console_name) {
       const console_name = input.console_name;
       delete input.console_name;
-      Room.findAll({
+      Room.findAndCountAll({
+        order: [sequelizeConnection.random()],
         where: input,
         include: [
           {
@@ -66,12 +77,15 @@ export const findAllRoomWithRental = (
             },
           },
         ],
+        limit: 10,
+        offset,
       })
         .then((res) => resolve(res))
         .catch((err) => reject(err));
     } else
-      Room.findAll({
+      Room.findAndCountAll({
         where: input,
+        order: sequelizeConnection.random(),
         include: [
           {
             model: Rental,
@@ -80,6 +94,8 @@ export const findAllRoomWithRental = (
             model: Console,
           },
         ],
+        limit: 10,
+        offset: offset,
       })
         .then((res) => resolve(res))
         .catch((err) => reject(err));
@@ -88,43 +104,30 @@ export const findAllRoomWithRental = (
 
 export const findAllRoom = (
   input: Partial<ROOM_DATA>,
-  include_console = false
+  opts?: optsQuery
 ): Promise<Room[]> => {
   return new Promise((resolve, reject) => {
-    if (include_console)
-      Room.findAll({
-        where: { ...input },
-        include: Console,
-      })
-        .then((res) => resolve(res))
-        .catch((err) => reject(err));
-    else
-      Room.findAll({
-        where: { ...input },
-      })
-        .then((res) => resolve(res))
-        .catch((err) => reject(err));
+    Room.findAll({
+      where: { ...input },
+      include: opts?.includes,
+    })
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
   });
 };
 
 export const findOneRoom = (
   input: Partial<ROOM_DATA>,
-  include_console = false
+  opts?: optsQuery
 ): Promise<Room | null> => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return new Promise((resolve, reject) => {
-    if (include_console)
-      Room.findOne({
-        where: input,
-        include: Console,
-      })
-        .then((res) => resolve(res))
-        .catch((err) => reject(err));
-    else
-      Room.findOne({
-        where: { ...input },
-      })
-        .then((res) => resolve(res))
-        .catch((err) => reject(err));
+    Room.findOne({
+      where: input,
+      include: opts?.includes,
+    })
+      .then((res) => resolve(res))
+      .catch((err) => reject(err));
   });
 };
 

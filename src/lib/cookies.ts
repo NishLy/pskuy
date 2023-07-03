@@ -28,27 +28,16 @@ export default class cookies {
     return s;
   }
 
-  // static delete(key:string){
-  //     if (typeof window !== "undefined") {
-  //       let doc = document.cookie;
-  //       if (doc === undefined) doc = "";
-  //       const splat = doc.split(/;\s*/);
-  //       for (let i = 0; i < splat.length; i++) {
-  //         const ps = splat[i].split("=");
-  //         const k = ps[0];
-  //         if (k === key) return ps[1];
-  //       }
-  //     }
-  // }
+  static delete(name: string) {
+    document.cookie = name + "=; Max-Age=-99999999;";
+  }
 
   static destroy() {
     if (typeof window !== "undefined") {
-      const str = "";
       document.cookie.split(";").forEach((e) => {
         const cookie = e.split("=")[0];
-        str + cookie + "=;";
+        document.cookie = cookie + "=;Max-Age=-99999999;";
       });
-      document.cookie = str;
     }
   }
 }

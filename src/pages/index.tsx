@@ -1,8 +1,20 @@
-import { ThemeProvider } from "@mui/material";
-import * as React from "react";
+import { InferGetServerSidePropsType } from "next";
+import { useRouter } from "next/router";
+import React from "react";
 
-export interface IIndexProps {}
+export function getServerSideProps() {
+  return {
+    redirect: {
+      permanent: false,
+      destination: "/signin",
+    },
+  };
+}
 
-export default function Index(props: IIndexProps) {
+export default function Page(
+  props: InferGetServerSidePropsType<typeof getServerSideProps>
+) {
+  const router = useRouter();
+
   return <></>;
 }

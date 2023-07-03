@@ -7,6 +7,7 @@ import Rental from "./rental";
 import User from "./user";
 import Payment from "./payment";
 export default class Transaction extends Model {
+  [x: string]: any;
   declare id: number;
   declare id_user: string;
   declare id_rental: number;
@@ -19,14 +20,6 @@ export default class Transaction extends Model {
   declare total_prices: number;
   declare comment: string;
   declare rating: number;
-  /**
-   * Helper method for defining associations.
-   * This method is not a part of Sequelize lifecycle.
-   * The `models/index` file will call this method automatically.
-   */
-  static associate() {
-    // define association here
-  }
 }
 
 Transaction.init(
@@ -93,7 +86,7 @@ Transaction.init(
     status: {
       allowNull: false,
       type: DataTypes.ENUM,
-      values: ["finished", "ongoing", "complaint", "cancel"],
+      values: ["proccess", "finished", "ongoing", "completed", "cancel"],
     },
   },
   {
@@ -102,5 +95,3 @@ Transaction.init(
     tableName: "Transactions",
   }
 );
-
-Transaction.create({});

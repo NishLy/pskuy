@@ -23,7 +23,7 @@ export const findOneUserRecord = (
   input: Partial<USER_DATA>
 ): Promise<User | null> => {
   return new Promise((resolve, reject) => {
-    User.findOne({ where: input })
+    User.findOne({ where: input, attributes: { exclude: ["password"] } })
       .then((res) => resolve(res))
       .catch((err) => reject(err));
   });

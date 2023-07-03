@@ -34,7 +34,7 @@ export const registerOwner = ({
 
 export const findOneOwnerRecord = (id: string): Promise<Owner | null> => {
   return new Promise((resolve, reject) => {
-    Owner.findOne({ where: { id } })
+    Owner.findOne({ where: { id }, attributes: { exclude: ["password"] } })
       .then((owner) => resolve(owner))
       .catch((error) => reject(error));
   });

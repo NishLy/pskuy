@@ -1,41 +1,26 @@
-import { FormatBold, Height, JoinRight, TextFields } from "@mui/icons-material";
-import {
-  Avatar,
-  Box,
-  Button,
-  colors,
-  Container,
-  CssBaseline,
-  Divider,
-  Grid,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { blue, red } from "@mui/material/colors";
-import { alignProperty } from "@mui/material/styles/cssUtils";
-import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
+import { Avatar, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import Link from "next/link";
+import React from "react";
+import Copyright from "./(__components)/copyright";
 
-function Copyright(props: any) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        PsKuiy
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import trpc from "@/utils/trpc";
+import UserContext from "@/context/app";
+import cookies from "@/lib/cookies";
+import USER_DATA from "@/interfaces/user";
 
 export default function account() {
+  const [userContext] = React.useContext(UserContext);
+
+  const { data } = trpc.getAccountDetails.useQuery({
+    id: userContext?.uuid ?? cookies.get("uuid") ?? "",
+    isUser: userContext?.user_type === "user" ? true : false,
+  });
+
+  const userData = {
+    data: data?.user as USER_DATA,
+    transactions: data?.transactions as { total: number },
+  };
+
   return (
     <>
       <Stack spacing={2}>
@@ -54,20 +39,21 @@ export default function account() {
               height: 80,
               marginX: "auto",
             }}
+            src={userData?.data?.profile_image}
           >
-            H
+            {userData?.data?.username}
           </Avatar>
           <Box sx={{ marginTop: 5 }}>
             <Divider variant="middle"></Divider>
           </Box>
-          <Typography>DummyAKUN</Typography> {/*GET Username Id*/}
+          <Typography>Info Akun</Typography> {/*GET Username Id*/}
           <br></br>
           <Typography sx={{ marginLeft: 2 }}> Data Transaksi :</Typography>
           <Stack direction={"row"} sx={{ justifyContent: "space-between" }}>
-            <Typography sx={{ marginLeft: 2 }}> Jumlah Transaksi </Typography>
-            <Typography sx={{ marginRight: 4 }}>get</Typography>
+            <Typography sx={{ marginLeft: 2 }}>
+              Jumlah Transaksi : {userData?.transactions?.total}
+            </Typography>
           </Stack>
-          <Typography> Akun4 </Typography>
         </Box>
         <Box sx={{ marginTop: 7 }}></Box>
         <Stack
@@ -78,17 +64,21 @@ export default function account() {
             alignItems: "center",
           }}
         >
-          <Typography fontSize={13}>
-            Berniat menjadi<br></br> Mitra Usaha?
-          </Typography>
-          <Link href="/register/owner">
-            <Button variant="contained" color="success">
-              <Typography fontSize={13}>Daftar Owner</Typography>
-            </Button>
-          </Link>
+          {userContext?.user_type === "user" && (
+            <>
+              <Typography fontSize={13}>
+                Berniat menjadi<br></br> Mitra Usaha?
+              </Typography>
+              <Link href="/register/owner">
+                <Button variant="contained" color="success">
+                  <Typography fontSize={13}>Daftar Owner</Typography>
+                </Button>
+              </Link>
+            </>
+          )}
         </Stack>
         <Box>
-          <Copyright sx={{ mt: 5 }} />
+          <Copyright />
         </Box>
       </Stack>
     </>

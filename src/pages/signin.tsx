@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -14,9 +14,12 @@ import Container from "@mui/material/Container";
 import cookies from "@/lib/cookies";
 import trpc from "@/utils/trpc";
 import { useRouter } from "next/router";
-import AppContext from "@/context/app";
-import Loading from "./__components/loading";
-import Copyright from "./__components/copyright";
+import UserContext from "@/context/app";
+import Loading from "@/pages/(__components)/loading";
+import Copyright from "@/pages/(__components)/copyright";
+import { LOGO_IMAGE_PATH } from "@/static/path";
+import { PRIMARY_COLOR } from "@/static/theme";
+import useAuth from "@/hooks/useAuth";
 
 export interface LOGIN_DATA {
   username: string;
@@ -35,21 +38,28 @@ export default function SignIn() {
 
   const [fetch, setFetch] = React.useState(false);
   const [errors, setErorrs] = React.useState<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
   }>({});
 
-  const [userContext, setUserContext] = React.useContext(AppContext);
-
   const router = useRouter();
+  if (useAuth()) router.replace("/home");
+  const [, setUserContext] = React.useContext(UserContext);
+
   /* `trpc.login.useQuery` is a hook provided by the `trpc` library that allows us to make a query to
  the server to log in a user. It takes in the `loginData` object as a parameter, which contains the
  username, password, and remember/owner boolean values. */
   trpc.login.useQuery(loginData, {
     enabled: fetch,
     refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnReconnect: true,
     retry: false,
-    staleTime: Infinity,
+
+    /* The `onSuccess` function is a callback function that is executed when the `trpc.login.useQuery` hook
+successfully retrieves data from the server. It sets several cookies using the `cookies.set` method,
+which stores data in the browser's cookies. The `setUserContext` function is also called to update
+the user context with the retrieved data. Finally, the `router.push` method is called to navigate
+the user to the home page. */
 
     onSuccess(data) {
       cookies.set("username", data.username, {
@@ -75,7 +85,6 @@ export default function SignIn() {
     },
 
     onError(error) {
-      console.log(error.data);
       if (!error.data) return;
       setErorrs(error.data);
       setFetch(false);
@@ -86,11 +95,6 @@ export default function SignIn() {
   `userContext` has a `token` and `uuid` value. If both values are present, it redirects the user to
   the home page using `router.replace("/home")`. The dependency array `[0]` ensures that this effect
   runs only once when the component mounts. */
-  React.useEffect(() => {
-    if (!userContext?.token || !userContext?.uuid) null;
-    else if (userContext?.token !== "" && userContext?.uuid !== "")
-      router.replace("/home");
-  }, [0]);
 
   /**
    * This function handles form submission by getting form data, updating login data, and setting a fetch
@@ -154,13 +158,22 @@ export default function SignIn() {
             alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+          <Avatar
+            sx={{
+              m: 1,
+              width: 50,
+              height: 50,
+              padding: 0.5,
+              bgcolor: PRIMARY_COLOR,
+            }}
+            src={LOGO_IMAGE_PATH}
+          >
             <LockOutlinedIcon />
           </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
+          <Typography component="h1" variant="h5" color="text.primary">
+            Login
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 4 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <TextField
               margin="normal"
               required
@@ -223,11 +236,11 @@ export default function SignIn() {
               Login
             </Button>
             <Grid container>
-              <Grid item xs>
+              {/* <Grid item xs>
                 <Link href="/reset/account/password" variant="body2">
                   Lupa password?
                 </Link>
-              </Grid>
+              </Grid> */}
               <Grid item>
                 <Link href="/signup" variant="body2">
                   Belum punya akun? daftar sekarang

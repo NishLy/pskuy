@@ -10,16 +10,27 @@ import { useRouter } from "next/router";
 import { Alert, Avatar, Backdrop, Snackbar, Link } from "@mui/material";
 import getBase64 from "@/lib/getBase64";
 import RENTAL_DATA from "@/interfaces/rental";
-import ImageCoursel from "@/pages/__components/image_coursel";
-import Loading from "@/pages/__components/loading";
-import MapSelect from "@/pages/__components/map_selector";
+import ImageCoursel from "@/pages/(__components)/image_coursel";
+import Loading from "@/pages/(__components)/loading";
+import MapSelect from "@/pages/(__components)/map_selector";
 import { appRouter } from "@/pages/api/trpc/[trpc]";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
-import createContext from "@/pages/api/trpc/context";
+import createTRPCContext from "@/pages/api/trpc/context";
 import SuperJSON from "superjson";
 import { findOneRentalRecord } from "@/services/rental";
+import useAuth from "@/hooks/useAuth";
+import RedirectSignin from "@/pages/(__components)/redirect_signin";
 
+/**
+ * This function is used to fetch rental data from the server and prepare it for rendering in a React
+ * component.
+ * @param context - The `context` parameter is an object that contains information about the
+ * server-side rendering context. It includes properties such as `query` which contains the query
+ * parameters from the URL, and `req` and `res` which are the incoming request and outgoing response
+ * objects respectively.
+ * @returns an object with the following properties:
+ */
 export async function getServerSideProps(
   context: GetServerSidePropsContext<{ id: string; id_owner: string }>
 ) {
@@ -40,7 +51,7 @@ export async function getServerSideProps(
 
   const helpers = createServerSideHelpers({
     router: appRouter,
-    ctx: await createContext(context),
+    ctx: await createTRPCContext(context),
     transformer: SuperJSON,
   });
 
@@ -63,6 +74,8 @@ export async function getServerSideProps(
 export default function Page(
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
+  if (!useAuth()) return <RedirectSignin />;
+
   const router = useRouter();
 
   const [updateData, setUpdateData] = React.useState<
@@ -386,8 +399,8 @@ changes. */
             paddingTop: 2,
           }}
         >
-          <Typography component="h1" variant="h5" mb={4}>
-            Edit Data Rentalmu Disini
+          <Typography variant="h6" mb={2}>
+            Edit Data Rental
           </Typography>
           <Avatar sx={{ height: 80, width: 80 }} src={getLogoImage()}></Avatar>
           <Button onClick={handleLogoClick}>edit logo</Button>
@@ -417,7 +430,7 @@ changes. */
               <Grid item xs={12}>
                 <ImageCoursel
                   controlled={{
-                    setState: handleImageCourselChange,
+                    onImageDelete: handleImageCourselChange,
                     setter: handleImagesClick,
                   }}
                   images={getArrayOfImages()}
@@ -516,7 +529,7 @@ changes. */
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, paddingY: 2 }}
+              sx={{ mt: 3, mb: 2 }}
             >
               Update Rental
             </Button>

@@ -4,9 +4,9 @@ import sequelizeConnection from "./connection";
 export default class Offer extends Model {
   declare id: number;
   declare caption: string;
-  declare thumbnail_image: string;
-  declare link_to_page: string;
-  declare expires_date: string;
+  declare redirect_url: string;
+  declare offer_image: string;
+  declare expires_date: Date;
   static associate() {
     // define association here
   }
@@ -23,10 +23,10 @@ Offer.init(
       allowNull: false,
       type: DataTypes.STRING,
     },
-    thumbnail_image: {
+    offer_image: {
       type: DataTypes.STRING,
     },
-    link_to_page: {
+    redirect_url: {
       type: DataTypes.STRING,
     },
     expires_date: {

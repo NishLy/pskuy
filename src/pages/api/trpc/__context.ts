@@ -1,11 +1,6 @@
+// import checkHourlyStatus from "@/corn/check_database";
 import { IncomingMessage } from "http";
 import { NextApiRequestCookies } from "next/dist/server/api-utils";
-
-// type req = IncomingMessage & {
-//   cookies: Partial<{
-//     [key: string]: string;
-//   }>;
-// };
 
 export const createContext = async ({
   req,
