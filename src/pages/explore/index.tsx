@@ -78,7 +78,7 @@ export default function Page(
                 lat: parseInt(router.query.lat as string),
                 lng: parseInt(router.query.lng as string),
               },
-              zoom: 5,
+              zoom: 15,
             }
           : defaultProps
       );

@@ -27,6 +27,8 @@ import { createServerSideHelpers } from "@trpc/react-query/server";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import SuperJSON from "superjson";
 import createTRPCContext from "@/pages/api/trpc/context";
+import Unauthorized from "@/pages/(__components)/unauthorized";
+import useAuth from "@/hooks/useAuth";
 
 /**
  * The above function is a TypeScript React function that uses the getServerSideProps method to fetch
@@ -69,6 +71,7 @@ export async function getServerSideProps(
 export default function Page(
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
+  if (!useAuth()) return <Unauthorized />;
   const router = useRouter();
   const { data: dataConsoles } = trpc.showAllConsole.useQuery({});
   const { data: dataJoysticks } = trpc.showAllJoystick.useQuery({});

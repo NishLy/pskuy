@@ -1,19 +1,38 @@
 import { useRouter } from "next/router";
 import React from "react";
-import UnauthorizedPage from "../401";
 import useAuth from "@/hooks/useAuth";
-import { Typography } from "@mui/material";
+import { CircularProgress, Container, Typography } from "@mui/material";
 
 export default function Unauthorized() {
   const router = useRouter();
 
   React.useEffect(() => {
-    const timeout = setTimeout(invoke, 5000);
+    const timeout = setTimeout(invoke, 1000);
     function invoke() {
       if (!useAuth()) return router.replace("/401");
       clearTimeout(timeout);
+      return;
     }
   }, []);
 
-  return <Typography variant="overline">Session Error</Typography>;
+  return (
+    <Container
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "background.paper",
+        width: "100vw",
+        position: "fixed",
+        flexDirection: "column",
+        zIndex: 15000,
+        height: "100vh",
+      }}
+    >
+      <CircularProgress />
+      <Typography mt={2} variant="h5">
+        Loading...
+      </Typography>
+    </Container>
+  );
 }

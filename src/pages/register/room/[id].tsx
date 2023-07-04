@@ -44,6 +44,7 @@ import Unauthorized from "@/pages/(__components)/unauthorized";
  * `dehydrate
  */
 export async function getStaticProps(context: GetStaticPropsContext) {
+  if (!useAuth()) return <Unauthorized />;
   const helpers = createServerSideHelpers({
     router: appRouter,
     ctx: {

@@ -20,10 +20,13 @@ import cookies from "@/lib/cookies";
 import Copyright from "@/pages/(__components)/copyright";
 import Loading from "@/pages/(__components)/loading";
 import UserContext from "@/context/app";
+import useAuth from "@/hooks/useAuth";
+import Unauthorized from "@/pages/(__components)/unauthorized";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
 export default function RegisterOwner() {
+  if (!useAuth()) return <Unauthorized />;
   const [userContext] = React.useContext(UserContext);
   const [ownerData, setUserData] = React.useState<OWNER>({
     id_user: userContext?.uuid ?? "",

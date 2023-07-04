@@ -18,14 +18,16 @@ import { useRouter } from "next/router";
 import { TypeTransactionsStatus } from "@/interfaces/status";
 import PendingIcon from "@mui/icons-material/Pending";
 import CancelIcon from "@mui/icons-material/Cancel";
-import ErrorIcon from "@mui/icons-material/Error";
 import TransactionDetail from "@/pages/(__components)/transaction_detail";
 import TRANSACTION_DATA from "@/interfaces/transaction";
 import RENTAL_DATA from "@/interfaces/rental";
 import GamepadIcon from "@mui/icons-material/Gamepad";
 import TimerOffIcon from "@mui/icons-material/TimerOff";
+import useAuth from "@/hooks/useAuth";
+import Unauthorized from "@/pages/(__components)/unauthorized";
 
 export default function Page() {
+  if (!useAuth()) return <Unauthorized />;
   const router = useRouter();
 
   const [openTransaction, setOpenTransaction] = React.useState(false);

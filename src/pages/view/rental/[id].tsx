@@ -30,6 +30,8 @@ import Category from "@/pages/(__components)/category";
 import { useRouter } from "next/router";
 import getSimplifyNumber from "@/lib/simplifyNumber";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import useAuth from "@/hooks/useAuth";
+import Unauthorized from "@/pages/(__components)/unauthorized";
 
 export async function getServerSideProps(
   context: GetServerSidePropsContext<{ id: string }>
@@ -58,6 +60,8 @@ export async function getServerSideProps(
 export default function Page(
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
+  if (!useAuth()) return <Unauthorized />;
+
   const router = useRouter();
   const [collapse, setCollapse] = React.useState(true);
   const { data } = trpc.findOneRental.useQuery(
