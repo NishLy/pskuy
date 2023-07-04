@@ -150,7 +150,6 @@ export default function index(
     message: string;
     severity: AlertColor;
   }>();
-  const [idFav, setIdFav] = React.useState<number | undefined>();
 
   /* The above code is a TypeScript React component that defines a function called `lastElement`. This
 function is a callback function that takes a parameter `node`. */
@@ -298,7 +297,6 @@ which means that the query will be retried if it fails on mount. */
         const fav = data as { favorite: boolean; id: number };
 
         setFav(fav.favorite);
-        setIdFav(fav.id);
         setUpdateFav(false);
       },
     }
@@ -328,7 +326,6 @@ which means that the query will be retried if it fails on mount. */
             : "Berhasil dihapus dari Favorit",
           severity: "success",
         });
-        setIdFav(fav.id);
         setUpdateFav(false);
       },
       onError(error) {

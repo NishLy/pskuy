@@ -7,6 +7,8 @@ import Box from "@mui/material/Box";
 import RoomGrid from "../(__components)/room_grid";
 import { useRouter } from "next/router";
 import RentalCardSearch from "../(__components)/rental_card";
+import Unauthorized from "../(__components)/unauthorized";
+import useAuth from "@/hooks/useAuth";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -37,6 +39,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function Search() {
+  if (!useAuth()) return <Unauthorized />;
   const theme = useTheme();
   const router = useRouter();
 

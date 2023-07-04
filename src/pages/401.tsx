@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Container, Stack, Typography } from "@mui/material";
+import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/router";
 
@@ -23,9 +23,12 @@ export default function UnauthorizedPage() {
             style={{ width: "100%", aspectRatio: "1/1", height: "fit-content" }}
             src="\images\401.svg"
           />
-          <Typography variant="h5" fontFamily="cursive">
+          <Typography variant="h5" mb={2} fontFamily="cursive">
             {router.query.message ? router.query.message : "Unauthorized :("}
           </Typography>
+          <Button onClick={() => router.replace("/signin")} variant="outlined">
+            Back to signin
+          </Button>
         </Stack>
       </Container>
     </Box>

@@ -14,8 +14,11 @@ import cookies from "@/lib/cookies";
 import ImageCoursel from "@/pages/(__components)/image_coursel";
 import MapSelect from "@/pages/(__components)/map_selector";
 import trpc from "@/utils/trpc";
+import Unauthorized from "@/pages/(__components)/unauthorized";
+import useAuth from "@/hooks/useAuth";
 
 export default function SignUp() {
+  if (!useAuth()) return <Unauthorized />;
   const [registerData, setRegisterData] = React.useState<RENTAL_DATA>({
     address: "",
     description: "",

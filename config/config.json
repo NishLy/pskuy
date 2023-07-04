@@ -1,7 +1,7 @@
 {
   "development": {
-    "username": "nishly",
-    "password": "7882",
+    "username": "root",
+    "password": "root",
     "database": "pskuiy_db_development",
     "host": "127.0.0.1",
     "dialect": "mariadb"
