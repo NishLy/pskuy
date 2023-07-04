@@ -8,11 +8,12 @@ export default function Unauthorized() {
   const router = useRouter();
 
   React.useEffect(() => {
-    const timeout = setTimeout(invoke, 5000);
+    const timeout: NodeJS.Timeout = setTimeout(invoke, 5000);
     function invoke() {
       if (!useAuth()) return router.replace("/401");
-      clearTimeout(timeout);
+      return clearTimeout(timeout);
     }
+    return;
   }, []);
 
   return <Typography variant="overline">Session Error</Typography>;
