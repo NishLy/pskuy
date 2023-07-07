@@ -107,11 +107,11 @@ export default function RoomGrid(props: Props) {
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
                   <CardActionArea>
-                    <Image
+                    <img
                       width="190"
                       height="190"
                       placeholder="blur"
-                      blurDataURL="/images/blur.webp"
+                      // blurDataURL="/images/blur.webp"
                       style={{
                         aspectRatio: "1/1",
                         objectFit: "cover",

@@ -11,6 +11,7 @@ export default function Unauthorized() {
     function invoke() {
       if (!useAuth()) return router.replace("/401");
       clearTimeout(timeout);
+      return;
     }
     return;
   }, []);

@@ -23,14 +23,17 @@ import Room from "@/models/room";
 import { appRouter } from "@/pages/api/trpc/[trpc]";
 import { createServerSideHelpers } from "@trpc/react-query/server";
 import {
-  GetStaticPaths,
-  GetStaticPropsContext,
-  InferGetStaticPropsType,
+  GetServerSidePropsContext,
+  InferGetServerSidePropsType,
+  // GetStaticPaths,
+  // GetStaticPropsContext,
+  // InferGetStaticPropsType,
 } from "next";
 import SuperJSON from "superjson";
 import Rental from "@/models/rental";
 import useAuth from "@/hooks/useAuth";
 import Unauthorized from "@/pages/(__components)/unauthorized";
+import createTRPCContext from "@/pages/api/trpc/context";
 
 /**
  * This function retrieves data for a static page using server-side helpers and returns it as props.
@@ -43,52 +46,47 @@ import Unauthorized from "@/pages/(__components)/unauthorized";
  * parameter from the `context` object. The `trpcState` key's value is the result of calling the
  * `dehydrate
  */
-export async function getStaticProps(context: GetStaticPropsContext) {
-  if (!useAuth()) return <Unauthorized />;
-  const helpers = createServerSideHelpers({
-    router: appRouter,
-    ctx: {
-      uuid: undefined,
-      username: undefined,
-      user_type: undefined,
-      email: undefined,
-      profile_photo: undefined,
-      token: undefined,
-    },
-    transformer: SuperJSON,
-  });
+// export async function getServerSideProps(context: GetServerSidePropsContext) {
+//   if (!useAuth()) return <Unauthorized />;
+//   const helpers = createServerSideHelpers({
+//     router: appRouter,
+//     ctx: await createTRPCContext(context),
+//     transformer: SuperJSON,
+//   });
 
-  await helpers.showAllConsole.prefetch({});
-  await helpers.showAllJoystick.prefetch({});
+//   await helpers.showAllConsole.prefetch({});
+//   await helpers.showAllJoystick.prefetch({});
 
-  const id = context.params?.id as string;
+//   const id = context.params?.id as string;
 
-  return {
-    props: JSON.parse(
-      JSON.stringify({ id_rental: id, trpcState: helpers.dehydrate() })
-    ),
-  };
-}
+//   return {
+//     props: JSON.parse(
+//       JSON.stringify({
+//         trpcState: helpers.dehydrate(),
+//         id_rental: id,
+//       })
+//     ),
+//   };
+// }
 
 /**
  * This function retrieves all rental IDs and maps them to paths for use in a Next.js application.
  * @returns This code is returning an object with two properties: `paths` and `fallback`.
  */
-export const getStaticPaths: GetStaticPaths = async () => {
-  const rental = await Rental.findAll({ attributes: ["id"] });
-  return {
-    paths: rental.map((rental) => ({
-      params: {
-        id: rental.id.toString(),
-      },
-    })),
-    fallback: "blocking",
-  };
-};
+// export const getStaticPaths: GetStaticPaths = async () => {
+//   const rental = await Rental.findAll({ attributes: ["id"] });
+//   return {
+//     paths: rental.map((rental) => ({
+//       params: {
+//         id: rental.id.toString(),
+//       },
+//     })),
+//     fallback: "blocking",
+//   };
+// };
 
-export default function Page(
-  props: InferGetStaticPropsType<typeof getStaticProps>
-) {
+export default function Page() {
+  // props: InferGetServerSidePropsType<typeof getServerSideProps>
   if (!useAuth()) return <Unauthorized />;
   const router = useRouter();
 
@@ -100,7 +98,7 @@ export default function Page(
     id_console: "",
     id_joystick_first_person: null,
     id_joystick_second_person: null,
-    id_rental: parseInt(props.id_rental) ?? -1,
+    id_rental: parseInt(router.query.id as string) ?? -1,
     information: "",
     status: "good",
     price_per_hour: -1,
@@ -142,7 +140,7 @@ application. It is making a query to create a room using the `createRoom` functi
         body: data,
       })
         .then((res) => {
-          res.ok ? router.push("/manage/rental/" + props.id_rental) : null;
+          res.ok ? router.push("/manage/rental/" + router.query.id) : null;
         })
         .catch((err) => {
           if (err) throw new Error(err);

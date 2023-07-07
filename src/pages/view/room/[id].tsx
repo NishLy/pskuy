@@ -47,6 +47,7 @@ import USER_DATA from "@/interfaces/user";
 import Comment, { CommentSkeleton } from "./(__components)/comment_card";
 import useAuth from "@/hooks/useAuth";
 import Unauthorized from "@/pages/(__components)/unauthorized";
+import Loading from "@/pages/(__components)/loading";
 
 export async function getStaticProps(
   context: GetStaticPropsContext<{ id: string }>
@@ -106,9 +107,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export default function index(
   props: InferGetStaticPropsType<typeof getStaticProps>
 ) {
+  if (!useAuth()) return <Unauthorized />;
   const router = useRouter();
 
-  if (!useAuth()) return <Unauthorized />;
+  if (router.isFallback) {
+    <Loading />;
+  }
+
   const [dataTransaction, setDataTransaction] = React.useState<{
     prices: { dicount: number; hour: number; total: number };
     times: {

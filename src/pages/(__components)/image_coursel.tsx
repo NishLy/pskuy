@@ -65,7 +65,7 @@ export default function ImageCoursel(props: Props) {
               scrollSnapAlign: "center",
             }}
           >
-            <Image
+            <img
               style={{
                 width: "100%",
                 height: "100%",
@@ -78,7 +78,7 @@ export default function ImageCoursel(props: Props) {
               width={800}
               height={800}
               placeholder="blur"
-              blurDataURL="/images/blur.webp"
+              // blurDataURL="/images/blur.webp"
               alt=""
             />
             {props.controlled?.onImageDelete && (
